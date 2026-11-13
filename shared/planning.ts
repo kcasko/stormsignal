@@ -96,7 +96,7 @@ export function comparePlan(
   return {
     title: hits.length
       ? "Overlaps forecast weather"
-      : "No flagged weather overlap",
+      : "No thunderstorm or wintry overlap",
     detail:
       evidence +
       ". " +

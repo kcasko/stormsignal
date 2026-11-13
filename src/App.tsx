@@ -218,6 +218,35 @@ export function App() {
                 {dateLabel(displayNow, zone)} · Eastern Time
               </div>
             </div>
+            <div className="weather-summary" aria-live="polite">
+              <p>
+                <strong>
+                  {urgent
+                    ? "Warning in effect"
+                    : firstPeriod?.forecast ||
+                      (loading ? "Checking NWS…" : "Forecast unavailable")}
+                </strong>
+                {firstPeriod && (
+                  <span>
+                    {firstPeriod.temperature !== null
+                      ? firstPeriod.temperature +
+                        "°" +
+                        firstPeriod.temperatureUnit
+                      : "Temperature unknown"}{" "}
+                    · Wind {firstPeriod.wind || "unknown"}
+                  </span>
+                )}
+              </p>
+              <a href="#official-alerts">
+                {weather?.availability.alerts
+                  ? weather.alerts.length
+                    ? `${weather.alerts.length} ${simulated ? "simulated" : "official"} alert${weather.alerts.length === 1 ? "" : "s"} ↓`
+                    : "No active alerts returned ↓"
+                  : loading
+                    ? "Checking alerts…"
+                    : "Alert status unknown ↓"}
+              </a>
+            </div>
             <section className="instrument" aria-label="Weather timing">
               <div className="dial-wrap">
                 <h2 className="dial-heading">
@@ -232,7 +261,7 @@ export function App() {
                     : loading
                       ? "Retrieving hourly forecast…"
                       : weather?.availability.forecast
-                        ? "No flagged weather in retrieved forecast"
+                        ? "No thunderstorm or wintry window"
                         : "Forecast unavailable"}
                 </p>
                 <Dial
@@ -251,6 +280,32 @@ export function App() {
                   {dateLabel(anchor, zone)} →{" "}
                   {dateLabel(anchor + 12 * HOUR, zone)} · Eastern Time
                 </p>
+              </div>
+              <section
+                id="decide"
+                className="decision-panel"
+                aria-labelledby="decision-title"
+              >
+                <div className="sectiontop">
+                  <h2 id="decision-title">What if you went earlier?</h2>
+                  <span className="small">Compare activity intervals</span>
+                </div>
+                <div className="plan-controls">
+                  <div>
+                    <label htmlFor="activity" className="eyebrow">
+                      YOUR PLAN
+                    </label>
+                    <select
+                      id="activity"
+                      value={activity}
+                      onChange={(e) => setActivity(e.target.value)}
+                    >
+                      <option value="errand">Run a 45-minute errand</option>
+                      <option value="walk">Take a 30-minute walk</option>
+                      <option value="charge">Charge essential devices</option>
+                    </select>
+                  </div>
+                </div>
                 <div className="controls" aria-label="Comparison times">
                   <button aria-pressed={!late} onClick={() => setLate(false)}>
                     Now vs. in 3 hours
@@ -259,72 +314,124 @@ export function App() {
                     In 2 vs. 4 hours
                   </button>
                 </div>
-              </div>
-              <div className="outlook">
-                <div className="risk-state">
-                  {urgent
-                    ? "Warning in effect"
-                    : windows.length
-                      ? "Plan around the forecast"
-                      : loading
-                        ? "Loading official data"
-                        : "Stay weather-aware"}
-                </div>
-                <h2>
-                  {urgent
-                    ? "Follow official instructions."
-                    : windows.length
-                      ? "Weather may affect your plans."
-                      : loading
-                        ? "Checking your local outlook."
-                        : "Make a plan. Keep checking."}
-                </h2>
-                <p>
-                  {firstPeriod
-                    ? firstPeriod.forecast
-                    : loading
-                      ? "Retrieving NWS hourly forecasts and active alerts."
-                      : "Forecast data unavailable. This view cannot assess weather conditions."}
-                </p>
-                {firstPeriod && (
-                  <div className="hazard">
-                    <b>Hourly forecast</b>
-                    {firstPeriod.temperature ?? "Unknown"}
-                    {firstPeriod.temperature !== null
-                      ? "°" + firstPeriod.temperatureUnit
-                      : ""}{" "}
-                    · Wind {firstPeriod.wind || "unknown"}
-                    <br />
-                    Precipitation chance:{" "}
-                    {firstPeriod.precipitation === null
-                      ? "unknown"
-                      : firstPeriod.precipitation + "%"}
-                  </div>
-                )}
-                {windows.map((w, i) => (
-                  <div key={i} className="hazard">
-                    <b>
-                      {dateLabel(w.start, zone)} · {timeLabel(w.start, zone)}–
-                      {intervalEndLabel(w.start, w.end, zone)}
-                    </b>
-                    {w.label}
-                  </div>
-                ))}
-                <p className="small">
-                  Amber marks hours whose NWS wording mentions thunderstorms,
-                  snow, freezing precipitation, or sleet. It is not a
-                  severe-weather rating or a complete hazard assessment.
-                </p>
-                <a
-                  className="small"
-                  href={officialUrl}
-                  target="_blank"
-                  rel="noopener"
+                <div
+                  className="comparison"
+                  aria-live="polite"
+                  aria-atomic="true"
                 >
-                  Official point forecast ↗
-                </a>
-              </div>
+                  {[
+                    { letter: "A", start: a },
+                    { letter: "B", start: b },
+                  ].map(({ letter, start }) => {
+                    const result = weather
+                      ? comparePlan(weather, start, minutes, displayNow)
+                      : {
+                          title: loading
+                            ? "Loading forecast"
+                            : "Comparison unavailable",
+                          detail: "Check official weather before making plans.",
+                        };
+                    return (
+                      <div className="option" key={letter}>
+                        <span className="letter">{letter}</span>
+                        <strong className="clock">
+                          {timeLabel(start, zone)}
+                        </strong>
+                        <div className="endtime">
+                          {dateLabel(start, zone)} ·{" "}
+                          {activity === "charge"
+                            ? "Start charging"
+                            : "Finishes " +
+                              intervalEndLabel(
+                                start,
+                                start + minutes * 60000,
+                                zone,
+                              )}
+                        </div>
+                        <p>{result.title}</p>
+                        <p className="small">
+                          {activity === "charge" && !urgent
+                            ? "Charge essential devices early. An outage cannot be predicted from this comparison."
+                            : result.detail}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="note">
+                  Timing does not establish safety. Unknown weather, rapidly
+                  changing conditions, and official warnings override this
+                  comparison.{" "}
+                  {stale ? "Data is stale; check current NWS guidance." : ""}
+                </p>
+              </section>
             </section>
+            <details className="outlook forecast-details">
+              <summary>Forecast details and weather-window evidence</summary>
+              <div className="risk-state">
+                {urgent
+                  ? "Warning in effect"
+                  : windows.length
+                    ? "Plan around the forecast"
+                    : loading
+                      ? "Loading official data"
+                      : "Stay weather-aware"}
+              </div>
+              <h2>
+                {urgent
+                  ? "Follow official instructions."
+                  : windows.length
+                    ? "Weather may affect your plans."
+                    : loading
+                      ? "Checking your local outlook."
+                      : "Make a plan. Keep checking."}
+              </h2>
+              <p>
+                {firstPeriod
+                  ? firstPeriod.forecast
+                  : loading
+                    ? "Retrieving NWS hourly forecasts and active alerts."
+                    : "Forecast data unavailable. This view cannot assess weather conditions."}
+              </p>
+              {firstPeriod && (
+                <div className="hazard">
+                  <b>Hourly forecast</b>
+                  {firstPeriod.temperature ?? "Unknown"}
+                  {firstPeriod.temperature !== null
+                    ? "°" + firstPeriod.temperatureUnit
+                    : ""}{" "}
+                  · Wind {firstPeriod.wind || "unknown"}
+                  <br />
+                  Precipitation chance:{" "}
+                  {firstPeriod.precipitation === null
+                    ? "unknown"
+                    : firstPeriod.precipitation + "%"}
+                </div>
+              )}
+              {windows.map((w, i) => (
+                <div key={i} className="hazard">
+                  <b>
+                    {dateLabel(w.start, zone)} · {timeLabel(w.start, zone)}–
+                    {intervalEndLabel(w.start, w.end, zone)}
+                  </b>
+                  {w.label}
+                </div>
+              ))}
+              <p className="small">
+                Amber marks hours whose NWS wording mentions thunderstorms,
+                snow, freezing precipitation, or sleet. It is not a
+                severe-weather rating or a complete hazard assessment.
+              </p>
+              <a
+                className="small"
+                href={officialUrl}
+                target="_blank"
+                rel="noopener"
+              >
+                Official point forecast ↗
+              </a>
+            </details>
+
             <section
               className="alert-list"
               id="official-alerts"
@@ -378,74 +485,6 @@ export function App() {
                   </article>
                 ))
               )}
-            </section>
-            <section id="decide">
-              <div className="sectiontop">
-                <h2>What if you went earlier?</h2>
-                <span className="small">Compare activity intervals</span>
-              </div>
-              <div className="plan-controls">
-                <div>
-                  <label htmlFor="activity" className="eyebrow">
-                    YOUR PLAN
-                  </label>
-                  <select
-                    id="activity"
-                    value={activity}
-                    onChange={(e) => setActivity(e.target.value)}
-                  >
-                    <option value="errand">Run a 45-minute errand</option>
-                    <option value="walk">Take a 30-minute walk</option>
-                    <option value="charge">Charge essential devices</option>
-                  </select>
-                </div>
-              </div>
-              <div className="comparison">
-                {[
-                  { letter: "A", start: a },
-                  { letter: "B", start: b },
-                ].map(({ letter, start }) => {
-                  const result = weather
-                    ? comparePlan(weather, start, minutes, displayNow)
-                    : {
-                        title: loading
-                          ? "Loading forecast"
-                          : "Comparison unavailable",
-                        detail: "Check official weather before making plans.",
-                      };
-                  return (
-                    <div className="option" key={letter}>
-                      <span className="letter">{letter}</span>
-                      <strong className="clock">
-                        {timeLabel(start, zone)}
-                      </strong>
-                      <div className="endtime">
-                        {dateLabel(start, zone)} ·{" "}
-                        {activity === "charge"
-                          ? "Start charging"
-                          : "Finishes " +
-                            intervalEndLabel(
-                              start,
-                              start + minutes * 60000,
-                              zone,
-                            )}
-                      </div>
-                      <p>{result.title}</p>
-                      <p className="small">
-                        {activity === "charge" && !urgent
-                          ? "Charge essential devices early. An outage cannot be predicted from this comparison."
-                          : result.detail}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="note">
-                Timing does not establish safety. Unknown weather, rapidly
-                changing conditions, and official warnings override this
-                comparison.{" "}
-                {stale ? "Data is stale; check current NWS guidance." : ""}
-              </p>
             </section>
           </div>
           <aside className="preparation" aria-label="Household preparation">

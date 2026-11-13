@@ -1556,3 +1556,396 @@ footer {
     width: 100%;
   }
 }
+
+/* Keep each planning decision in one visual and keyboard context. */
+.weather-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin: 0 30px 20px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.weather-summary p {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+.weather-summary strong {
+  font-weight: 500;
+}
+.weather-summary span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.weather-summary > a {
+  font-size: 11px;
+  flex-shrink: 0;
+  color: var(--blue);
+}
+.instrument {
+  grid-template-columns: minmax(280px, 1fr) minmax(340px, 1.05fr);
+  align-items: start;
+  gap: 25px;
+  padding: 0 30px 28px;
+}
+.instrument > .dial-wrap {
+  min-width: 0;
+  padding-top: 3px;
+}
+.instrument .dial {
+  max-width: 410px;
+}
+.instrument .dial-heading {
+  font-size: 18px;
+  margin-top: 0;
+}
+.instrument .arc-key {
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+.instrument .dial-caption {
+  font-size: 11px;
+  gap: 20px;
+}
+.instrument .dial-context {
+  font-size: 10px;
+}
+.instrument > #decide {
+  padding: 0;
+  min-width: 0;
+  scroll-margin-top: 20px;
+}
+.decision-panel .sectiontop {
+  display: block;
+}
+.decision-panel .sectiontop h2 {
+  font-size: 25px !important;
+  line-height: 1.2;
+}
+.decision-panel .sectiontop > .small {
+  display: block;
+  margin-top: 7px;
+  font-size: 12px;
+}
+.decision-panel .plan-controls {
+  margin: 20px 0 13px;
+}
+.decision-panel .controls {
+  gap: 0;
+  display: flex;
+  margin: 0 0 20px;
+}
+.decision-panel .controls button {
+  flex: 1;
+  min-height: 44px;
+  font-size: 12px;
+  padding: 10px 8px;
+  white-space: normal;
+}
+.decision-panel .controls button + button {
+  border-left: 0;
+}
+.decision-panel .controls button:first-child {
+  border-radius: 3px 0 0 3px;
+}
+.decision-panel .controls button:last-child {
+  border-radius: 0 3px 3px 0;
+}
+.decision-panel .comparison {
+  gap: 20px;
+}
+.decision-panel .option {
+  grid-template-columns: 1fr;
+  padding-top: 16px;
+}
+.decision-panel .option .letter {
+  grid-column: 1;
+  grid-row: auto;
+  margin-bottom: 12px;
+}
+.decision-panel .option .clock,
+.decision-panel .option .endtime,
+.decision-panel .option > p {
+  grid-column: 1;
+}
+.decision-panel .clock {
+  font-size: 26px;
+}
+.decision-panel .note {
+  font-size: 11px;
+  line-height: 1.65;
+}
+.forecast-details {
+  margin: 0 30px 20px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 0;
+}
+.forecast-details > summary {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 5px 0;
+}
+.forecast-details[open] > summary {
+  margin-bottom: 15px;
+}
+.forecast-details h2 {
+  font-size: 24px;
+  max-width: none;
+}
+.forecast-details > p {
+  max-width: none;
+}
+.forecast-details .hazard {
+  display: inline-block;
+  vertical-align: top;
+  min-width: 220px;
+  margin-right: 25px;
+}
+.forecast-details .small {
+  font-size: 12px;
+}
+.preparation {
+  padding-top: 25px;
+}
+.preparation h2 {
+  margin-top: 20px;
+}
+#official-alerts {
+  scroll-margin-top: 20px;
+}
+@media (min-width: 1500px) {
+  .instrument {
+    padding-left: 30px;
+    padding-right: 30px;
+    gap: 30px;
+  }
+  .instrument .dial {
+    max-width: 460px;
+  }
+}
+@media (min-width: 761px) and (max-width: 1150px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  .instrument {
+    grid-template-columns: minmax(260px, 0.85fr) minmax(320px, 1fr);
+  }
+  .preparation {
+    border-left: 0;
+    border-top: 1px solid #778496;
+    padding: 25px 30px;
+  }
+  .preparation #prepare {
+    position: static;
+  }
+  .preparation #tasks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 24px;
+  }
+  .preparation .profile {
+    flex-direction: row;
+    gap: 20px;
+  }
+  .preparation h2 {
+    font-size: 30px;
+  }
+  .preparation #prepare > p:last-child {
+    max-width: 700px;
+  }
+}
+@media (max-width: 760px) {
+  body {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+  .masthead {
+    padding: 14px 5%;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .masthead .brand {
+    font-size: 19px;
+    gap: 7px;
+    white-space: nowrap;
+  }
+  .masthead .mark {
+    width: 25px;
+    gap: 3px;
+  }
+  .masthead .demo-label {
+    margin-left: auto;
+    width: auto;
+    padding: 0 0 0 10px;
+    border: 0;
+    border-left: 1px solid var(--line);
+    font-size: 8px;
+    display: block;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .masthead nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 50;
+    display: flex;
+    justify-content: space-around;
+    gap: 0;
+    margin: 0;
+    padding: 6px 5% calc(6px + env(safe-area-inset-bottom));
+    background: #191e25;
+    border-top: 1px solid #687589;
+  }
+  .masthead nav a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    flex: 1;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .masthead nav a:hover,
+  .masthead nav a:focus-visible {
+    background: #29364a;
+    color: var(--blue);
+  }
+  .modebar {
+    padding: 9px 5%;
+    gap: 7px;
+  }
+  .modebar > label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .modebar select {
+    font-size: 11px;
+    min-height: 38px;
+    padding: 7px;
+  }
+  .modebar button {
+    min-height: 38px;
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+  .modebar > span {
+    font-size: 10px;
+  }
+  .placebar {
+    padding: 14px 5% 10px;
+  }
+  .placebar label {
+    font-size: 9px;
+  }
+  .placebar select {
+    font-size: 18px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+  .snapshot strong {
+    font-size: 21px;
+  }
+  .weather-summary {
+    margin: 0 5% 16px;
+    padding: 10px 0;
+    display: block;
+  }
+  .weather-summary p {
+    font-size: 13px;
+    gap: 3px 10px;
+  }
+  .weather-summary span {
+    font-size: 11px;
+  }
+  .weather-summary > a {
+    display: inline-block;
+    margin-top: 5px;
+    font-size: 11px;
+  }
+  .instrument {
+    grid-template-columns: 1fr;
+    padding: 0 5% 24px;
+    gap: 23px;
+  }
+  .instrument .dial {
+    max-width: 315px;
+  }
+  .instrument .dial-heading {
+    font-size: 18px;
+  }
+  .instrument .arc-key {
+    font-size: 11px;
+  }
+  .instrument .dial-caption {
+    font-size: 11px;
+    margin-top: 0;
+  }
+  .instrument .dial-context {
+    font-size: 10px;
+    margin-top: 4px;
+  }
+  .instrument > #decide {
+    scroll-margin-top: 14px;
+  }
+  .decision-panel .plan-controls {
+    margin-top: 16px;
+  }
+  .decision-panel .controls {
+    margin-bottom: 18px;
+  }
+  .decision-panel .controls button {
+    font-size: 12px;
+  }
+  .decision-panel .comparison {
+    gap: 20px;
+  }
+  .decision-panel .clock {
+    font-size: 26px;
+  }
+  .decision-panel .option .small {
+    font-size: 12px;
+    line-height: 1.65;
+  }
+  .decision-panel .note {
+    margin-top: 17px;
+  }
+  .forecast-details {
+    margin: 0 5% 18px;
+    padding: 11px 0;
+  }
+  .forecast-details .hazard {
+    min-width: 0;
+    display: block;
+    margin-right: 0;
+  }
+  .forecast-details h2 {
+    font-size: 23px;
+  }
+  .preparation {
+    padding-top: 24px;
+  }
+  .timeline,
+  .caveat {
+    scroll-margin-top: 14px;
+  }
+  #prepare {
+    scroll-margin-top: 14px;
+  }
+  footer {
+    padding-bottom: 20px;
+  }
+}

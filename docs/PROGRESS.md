@@ -21,3 +21,9 @@ Branch: `feat/stormsignal-mvp`. This is the first working local slice, not a com
 - Submission write-up, architecture artifact, public demo video, and competition submission.
 
 No cloud credentials were used, and no AWS resources, GitHub push, publication, or submission was performed.
+
+## Planning-flow refinement — November 12
+
+Moved the activity selector, the single pair of time-comparison buttons, and the results into one section beside the dial. Added a short current-weather summary and moved the fuller forecast evidence into an expandable disclosure. Mobile navigation is fixed at the bottom; the smaller dial and compact header shorten arrival. Clarified the no-overlap label to name thunderstorm/wintry conditions rather than ambiguous “flagged weather”.
+
+Visible browser walkthrough verified desktop at 1440 × 900 and phone at 390 × 844. Following Compare plans on the phone placed the activity selector at y=108–152, time controls at y=165–209, and results at y=227–453, all above the fixed navigation at y=787. Previously, time controls ended 488 pixels above that view. Changing activity and timing worked in place. Prepare navigation landed the checklist at y=14, with navigation remaining visible. Temporary viewport override was reset. Production build and 21 tests passed.
