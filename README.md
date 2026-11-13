@@ -25,7 +25,7 @@ Requires Node.js ≥ 22.12.
 npm ci
 npm run dev        # web on http://127.0.0.1:5173, API on 127.0.0.1:8787
 npm test           # 94 unit/integration tests
-npm run e2e        # 46 Playwright tests: desktop + mobile, axe accessibility, offline reload, print
+npm run e2e        # 48 Playwright tests: desktop + mobile, axe accessibility, offline reload, print
 npm run build      # type check, frontend to dist/, Lambda bundle to build/handler.mjs
 npx tsx scripts/live-check.ts   # real NWS check for all cities
 npx tsx scripts/screenshots.ts  # regenerate docs/screenshots (needs npm run dev)
