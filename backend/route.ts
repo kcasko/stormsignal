@@ -3,11 +3,13 @@ import { locations } from "../shared/locations";
 import { pointId } from "./geocode";
 import { getWeather } from "./weather";
 import { assess } from "../shared/riskEngine";
+import { reviewRouteWarnings, type RouteAlertReview } from "./routeAlerts";
 
 export type RouteResult = {
   origin: string; destination: string;
   distanceMi: number; durationMin: number;
   line: number[][];
+  warningReview: RouteAlertReview;
   checks: { label: string; level: string; alerts: { event: string; url: string }[]; available: boolean }[];
   warning: string;
 };
@@ -66,12 +68,14 @@ export async function routePlan(from: string, to: string, provider: RouteProvide
       return { label, available: false, level: "unknown", alerts: [] };
     }
   }));
+  const warningReview = await reviewRouteWarnings(coords);
   return {
     origin: a.name, destination: b.name,
     distanceMi: Math.round((computed.distanceMeters / 1609.344) * 10) / 10,
     durationMin: Math.round(computed.durationSeconds / 60),
     line: coords.length > 300 ? coords.filter((_, i) => i % Math.ceil(coords.length / 300) === 0 || i === coords.length - 1) : coords,
+    warningReview,
     checks,
-    warning: "Weather sampled at only three route points, not checked continuously. Missing data is unknown. This is not a road hazard or safety assessment. Check official NWS alerts and road conditions before travel.",
+    warning: "Route warning boundaries are checked where NWS geometry is available, but incomplete feeds and zone boundaries may miss warnings. Weather risk is sampled at only three points. This is not a road hazard or safety assessment. Check official NWS alerts and road conditions before travel.",
   };
 }

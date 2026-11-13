@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { locations } from "../shared/locations";
 import type { RouteResult } from "../backend/route";
+import { RouteMap } from "./RouteMap";
 
 export function RoutePlanner({ origin, simulated }: { origin: string; simulated: boolean }) {
   const from = locations.some(l => l.id === origin) ? origin : locations[0].id;
@@ -35,6 +36,17 @@ export function RoutePlanner({ origin, simulated }: { origin: string; simulated:
       {error && <p role="alert">{error}</p>}
       {result && <div className="route-results" aria-live="polite">
         <h3>{result.origin} to {result.destination}</h3>
+        <RouteMap result={result} />
+        <section aria-label="Official NWS warnings along route" className="route-warning-review">
+          <h4>Official warning areas along this route</h4>
+          {result.warningReview ? <>
+            {result.warningReview.warnings.length ? <ul>{result.warningReview.warnings.map((item, i) =>
+              <li key={item.id + i}><a href={item.url} rel="noreferrer" target="_blank">{item.event}</a>: possible route overlap ({item.basis === "polygon" ? "NWS storm polygon" : "NWS warning zone"}). {item.area}</li>
+            )}</ul> : <p>No intersections identified in the NWS warning areas successfully checked. This does not mean the route is safe.</p>}
+            {result.warningReview.status === "partial" && <p className="muted" role="status">Incomplete warning coverage: {result.warningReview.gaps.join("; ")}</p>}
+            <p className="fine">NWS warning feeds checked: {new Date(result.warningReview.checkedAt).toLocaleString()}. Zone and polygon boundaries are approximate.</p>
+          </> : <p className="muted">Warning area coverage unavailable.</p>}
+        </section>
         <p><strong>{result.distanceMi} miles</strong> · Approximately {result.durationMin} minutes driving, according to Amazon Location. Traffic and conditions may change.</p>
         <ol>{result.checks.map((check, i) => <li key={i}>
           <strong>{check.label}</strong>: {check.available ? `Storm Signal ${check.level}` : "Conditions unknown"}

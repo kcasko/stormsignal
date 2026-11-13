@@ -968,3 +968,13 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 .route-results { border-left: 3px solid currentColor; padding: .4rem 1rem; margin: 1rem 0; }
 .route-results ol { padding-left: 1.5rem; }
 .route-results li { margin: .6rem 0; }
+
+.route-map { margin: 1rem 0; }
+.route-map svg { width: 100%; height: auto; display: block; border: 1px solid var(--line, #aaa); border-radius: 4px; }
+.route-map-back { fill: var(--paper, #f0f0ee); }
+.route-warning-area { fill: #da7735; fill-opacity: .25; stroke: #b04c25; stroke-width: 1.5; }
+.route-path { fill: none; stroke: #155d8e; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.route-marker { fill: #fff; stroke: #155d8e; stroke-width: 3; }
+.route-map-label { font: 600 16px system-ui, sans-serif; fill: currentColor; paint-order: stroke; stroke: var(--paper, #fff); stroke-width: 4; }
+.route-warning-review { padding: .7rem 0; border-block: 1px solid var(--line, #aaa); }
+.route-warning-review h4 { margin: .25rem 0; }
