@@ -3,7 +3,7 @@
 ## Automated (Vitest)
 
 ```bash
-npm test          # 61 tests, under 1 s, no network
+npm test          # 74 tests, under 1 s, no network
 npm run typecheck
 npm run build     # type check + Vite build + Lambda bundle (build/handler.mjs)
 ```
@@ -24,7 +24,7 @@ Fixtures in `tests/fixtures/weather.ts` are synthetic and labelled as such.
 npm run e2e        # starts or reuses Vite on 127.0.0.1:5173; /api is mocked, so no NWS calls
 ```
 
-`e2e/app.spec.ts` and `e2e/offline.spec.ts` run on desktop Chrome and a Pixel 7 profile, plus dark-mode axe checks (38 passing):
+`e2e/app.spec.ts` and `e2e/offline.spec.ts` run on desktop Chrome and a Pixel 7 profile, plus dark-mode axe checks (40 passing):
 - Live Overview shows the level, the evidence sentence, and alert status. An API 503 shows "Data unavailable", never Low.
 - Simulated scenarios are always bannered. A tornado warning shows the override, and the comparison and routine tasks are paused (collapsed, full contrast).
 - What If? shows three options with labels and a differences sentence; switching activity changes the options.

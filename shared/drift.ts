@@ -14,18 +14,46 @@ export interface SnapshotHour {
   i: number | null; // ice in
   tp: number | null; // temperature
 }
+/** An alert as seen in one snapshot: enough to tell issued, updated, cancelled and expired apart later. */
+export interface SnapshotAlert {
+  key: string; // VTEC event key, or the NWS id when there is no VTEC
+  event: string;
+  kind: string;
+  sent: string;
+  ends: string; // ends, or expires when NWS gives no end
+  action: string | null; // VTEC action of the message seen
+}
 export interface Snapshot {
   capturedAt: string;
   issuedAt: string | null;
   level: Classification;
   hours: SnapshotHour[];
+  /** Alerts active at capture time. Absent in snapshots saved before alert tracking existed. */
+  alerts?: SnapshotAlert[];
 }
+
+export const alertKey = (a: Weather["alerts"][number]) => a.vtec?.key ?? a.id;
+export function toSnapshotAlerts(weather: Weather): SnapshotAlert[] | undefined {
+  if (!weather.availability.alerts) return undefined;
+  return weather.alerts.slice(0, 30).map((a) => ({
+    key: alertKey(a).slice(0, 200),
+    event: a.event,
+    kind: a.kind,
+    sent: a.sent,
+    ends: a.ends || a.expires,
+    action: a.vtec?.action ?? null,
+  }));
+}
+/** Changes when an alert is added, updated or removed. */
+export const alertSignature = (alerts: SnapshotAlert[] | undefined) =>
+  alerts === undefined ? "?" : alerts.map((a) => a.key + "@" + a.sent).sort().join("|");
 
 export function toSnapshot(weather: Weather, level: Classification, now: number, hours = 48): Snapshot {
   return {
     capturedAt: new Date(now).toISOString(),
     issuedAt: weather.forecastUpdatedAt,
     level,
+    alerts: toSnapshotAlerts(weather),
     hours: weather.periods
       .filter((p) => Date.parse(p.end) > now && Date.parse(p.start) < now + hours * HOUR)
       .map((p: Period) => ({

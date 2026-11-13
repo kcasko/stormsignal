@@ -40,6 +40,16 @@ export interface Alert {
   ends: string | null;
   area: string;
   url: string;
+  /** NWS message type: Alert (new), Update or Cancel. */
+  messageType: string;
+  /** VTEC event tracking: stable key across updates (office.phenomenon.significance.number) and this message's action (NEW, CON, EXT, CAN, EXP, UPG…). */
+  vtec: { key: string; action: string } | null;
+  /** Sent times of earlier messages for this alert, from NWS "references", oldest first. */
+  previous: string[];
+  /** Storm-based polygon, as rings of [lon, lat]. Null when NWS lists zones instead. */
+  geometry: number[][][] | null;
+  /** Affected NWS zones, e.g. "forecast/MIZ072" or "county/MIC077". */
+  zones: string[];
 }
 export interface Observation {
   station: string;

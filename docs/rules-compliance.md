@@ -39,6 +39,6 @@ Legend: ✅ met · ⏳ not yet (planned) · ⚠️ needs Keith's decision · �
 | Criterion | How the entry addresses it |
 | --- | --- |
 | Technical innovation and originality | Evidence-returning deterministic rule engine shared by Lambda and the browser; "what would change the level" counterfactuals; forecast-drift tracking (EventBridge Scheduler → Lambda → DynamoDB TTL) on an API that only serves the latest forecast; activity-specific What If? with your own time; Unknown-not-Low handling. |
-| Craft and execution (fit of services, **reliability**) | CloudFront fronting both S3 and the API (one origin); API throttling; independent failure handling per NWS source; 61 unit/integration tests and 38 browser tests, plus `e2e/live.spec.ts` against the public URL. |
+| Craft and execution (fit of services, **reliability**) | CloudFront fronting both S3 and the API (one origin); API throttling; independent failure handling per NWS source; 74 unit/integration tests and 40 browser tests, plus `e2e/live.spec.ts` against the public URL. |
 | Usefulness and impact (**reuse of the pattern**) | Works for any U.S. place; share links; calendar reminders; offline plan. "Reuse the pattern" section in the article; rules published at `/api/rules`. ⚠️ A public repo with a license and `template.yaml` makes reuse concrete. |
 | Creativity and storytelling | Problem → Overview → What If? → Storm Prep → architecture, in both article and video; the "one storm, different decisions" theme. |

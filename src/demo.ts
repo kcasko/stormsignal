@@ -2,7 +2,7 @@
 // They never replace failed live data and are always shown with a simulation banner.
 import type { Alert, Location, Period, Weather } from "../shared/types";
 import { alertKind, HOUR } from "../shared/rules";
-import { toSnapshot, type Snapshot } from "../shared/drift";
+import { toSnapshot, type Snapshot, type SnapshotAlert } from "../shared/drift";
 
 export const SCENARIOS = [
   { id: "thunderstorm", label: "Severe thunderstorms + wind" },
@@ -51,7 +51,24 @@ function alert(location: Location, event: string, from: number, to: number, inst
     ends: new Date(SCENARIO_NOW + to * HOUR).toISOString(),
     area: `${location.name} (fictional coverage)`,
     url: "https://www.weather.gov/",
+    messageType: "Update",
+    vtec: { key: `SIM.${event.replace(/[^A-Z]/g, "").slice(0, 2)}.${alertKind(event).charAt(0).toUpperCase()}.0001`, action: "CON" },
+    // An earlier version of the alert, so the timeline shows "Issued" then "Updated".
+    previous: [new Date(SCENARIO_NOW - 3 * HOUR).toISOString()],
+    geometry: [fictionalArea(location, alertKind(event) === "warning")],
+    zones: [],
   };
+}
+
+/** A made-up alert polygon around the location: a narrow storm-based box for warnings, a broad area otherwise. */
+function fictionalArea(location: Location, warning: boolean): number[][] {
+  const { latitude: y, longitude: x } = location;
+  const r = (v: number) => Math.round(v * 1000) / 1000;
+  const pts = warning
+    ? [[-0.22, -0.1], [0.05, -0.16], [0.26, 0.12], [-0.02, 0.17]]
+    : [[-0.85, -0.45], [-0.1, -0.62], [0.7, -0.5], [0.92, 0.1], [0.55, 0.58], [-0.3, 0.66], [-0.9, 0.2]];
+  const ring = pts.map(([dx, dy]) => [r(x + dx), r(y + dy)]);
+  return [...ring, ring[0]];
 }
 
 export function scenarioWeather(location: Location, id: ScenarioId): Weather {
@@ -157,7 +174,28 @@ export function scenarioHistory(id: ScenarioId, weather: Weather): Snapshot[] {
       })),
     };
     const level = id === "winter" ? "high" : k < 3 ? "moderate" : k < 6 ? "elevated" : "high";
-    out.push({ ...toSnapshot(scaled, level, SCENARIO_NOW, 48), capturedAt: new Date(capturedAt).toISOString() });
+    out.push({
+      ...toSnapshot(scaled, level, SCENARIO_NOW, 48),
+      capturedAt: new Date(capturedAt).toISOString(),
+      alerts: alertsAt(id, weather, capturedAt),
+    });
   }
+  return out;
+}
+
+/** Fictional alert lifecycle for the simulated history: current alerts as they stood at each capture, plus one that ended. */
+function alertsAt(id: ScenarioId, weather: Weather, at: number): SnapshotAlert[] {
+  const iso = (h: number) => new Date(SCENARIO_NOW + h * HOUR).toISOString();
+  const out: SnapshotAlert[] = weather.alerts.flatMap((a) => {
+    const sents = [...a.previous, a.sent].filter((t) => Date.parse(t) <= at);
+    if (!sents.length) return [];
+    const sent = sents[sents.length - 1];
+    return [{ key: a.vtec?.key ?? a.id, event: a.event, kind: a.kind, sent, ends: a.ends || a.expires, action: sent === a.sent ? (a.vtec?.action ?? null) : sents.length === 1 ? "NEW" : "CON" }];
+  });
+  const h = (at - SCENARIO_NOW) / HOUR;
+  if (id === "thunderstorm" && h >= -20 && h < -8)
+    out.push({ key: "SIM.SPS.0001", event: "Special Weather Statement", kind: "statement", sent: iso(-20), ends: iso(-8), action: null });
+  if (id === "winter" && h < 0)
+    out.push({ key: "SIM.WS.A.0001", event: "Winter Storm Watch", kind: "watch", sent: h < -3 ? iso(-26) : iso(-3), ends: iso(14), action: h < -3 ? "NEW" : "UPG" });
   return out;
 }

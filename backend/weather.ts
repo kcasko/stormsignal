@@ -1,6 +1,7 @@
 import { locations } from "../shared/locations";
 import { alertKind } from "../shared/rules";
 import { parsePointId } from "./geocode";
+import { outerRings, parseVtec, zoneRef } from "../shared/geo";
 import type { Weather, Period, Alert, Observation, Location } from "../shared/types";
 type Fetcher = typeof fetch;
 type Grid = Map<string, { start: number; end: number; value: number }[]>;
@@ -43,7 +44,7 @@ export const gridUrl = (raw: unknown) =>
 export const stationsUrl = (raw: unknown) =>
   nwsUrl(raw, /^\/gridpoints\/[A-Z]{3}\/\d+,\d+\/stations$/, "stations endpoint");
 
-async function json(url: string, fetcher: Fetcher, maxBytes = 2000000) {
+export async function json(url: string, fetcher: Fetcher, maxBytes = 2000000) {
   const response = await fetcher(url, {
     headers: {
       Accept: "application/geo+json",
@@ -205,6 +206,21 @@ export function normalizeAlerts(raw: unknown, now: number): Alert[] {
         ends: iso(p.ends),
         area: text(p.areaDesc, 3000),
         url: "https://alerts.weather.gov/",
+        messageType: text(p.messageType, 20),
+        vtec: parseVtec(record(p.parameters).VTEC),
+        previous: (Array.isArray(p.references) ? p.references : [])
+          .map((r: unknown) => iso(record(r).sent))
+          .filter((t: string | null): t is string => !!t)
+          .sort((a: string, b: string) => Date.parse(a) - Date.parse(b))
+          .slice(-20),
+        geometry: outerRings(f.geometry),
+        zones: Array.from(
+          new Set(
+            (Array.isArray(p.affectedZones) ? p.affectedZones : [])
+              .map(zoneRef)
+              .filter((z: string | null): z is string => !!z),
+          ),
+        ).slice(0, 40) as string[],
       };
     })
     .filter((a) => Date.parse(a.ends || a.expires) > now);

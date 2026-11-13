@@ -14,8 +14,6 @@ Branch: `feat/stormsignal-mvp`. This is the first working local slice, not a com
 
 ## Not yet complete
 
-- Nationwide city/ZIP search, exact-address selection, alert maps, and polygon/zone fallback.
-- Scheduled ingestion and actual historical alert events in DynamoDB.
 - SAM validation/build and AWS execution; private S3/CloudFront frontend hosting; billing controls; deployed end-to-end tests.
 - Full accessibility audit and real device/human safety-copy review.
 - Submission write-up, architecture artifact, public demo video, and competition submission.
@@ -81,3 +79,10 @@ Verified: 61 unit tests, 38 Playwright tests (incl. offline reload and print), `
 - Not set: the optional budget alert (needs an email; pass `-BudgetEmail` to `deploy.ps1`).
 
 Remaining (Keith): record and upload the video, publish the Builder Center article, submit before Nov 16, 1:00 PM PT.
+
+## Nov 13: alert maps and alert history
+
+- Every alert card has an SVG area map: the NWS storm-based polygon when there is one, otherwise the outlines of the NWS zones it lists (`/api/area`, allow-listed `api.weather.gov/zones/*`, cached 24 h), the user's point ("inside"/"outside") and nearby towns from bundled Census data. Simulated alerts use fictional areas, labelled as such.
+- Every alert card has a timeline from NWS `references` and VTEC actions: issued, updated, extended, upgraded, scheduled end.
+- Snapshots now also record active alerts and are saved whenever they change. The Overview lists alerts that ended in the last 24 hours as expired, cancelled (VTEC CAN), upgraded (UPG) or "no longer listed by NWS" (never assumed cancelled).
+- 74 unit tests and 40 local browser tests pass.

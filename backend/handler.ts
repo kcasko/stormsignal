@@ -1,11 +1,13 @@
 import { getWeather } from "./weather";
-import { geocode, parsePointId } from "./geocode";
+import { geocode, parsePointId, placesIn } from "./geocode";
+import { getZones, parseZoneRefs } from "./zones";
+import { bbox } from "../shared/geo";
 import { historyStore, takeSnapshots, RETENTION_HOURS } from "./history";
 import { locations } from "../shared/locations";
 import { assess } from "../shared/riskEngine";
 import { rulesCatalog } from "../shared/rulesCatalog";
 
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
 type Event = {
   rawPath?: string;
   requestContext?: { http?: { method?: string } };
@@ -42,6 +44,27 @@ export async function handler(event: Event) {
         return reply(200, { results: await geocode(query) });
       } catch {
         return reply(503, { error: "Address lookup is unavailable. Try a ZIP or city name." });
+      }
+    }
+    case "/api/area": {
+      // Alert map data: NWS zone outlines (optional) plus the largest nearby places, inside a bounding box.
+      const box = (q.bbox ?? "").split(",").map(Number);
+      const validBox =
+        box.length === 4 && box.every(Number.isFinite) && box[0] < box[2] && box[1] < box[3] &&
+        box[0] >= -180 && box[2] <= -60 && box[1] >= 15 && box[3] <= 72 && box[2] - box[0] <= 12 && box[3] - box[1] <= 8;
+      const refs = q.zones ? parseZoneRefs(q.zones) : [];
+      if (refs === null || (!validBox && !refs.length)) return reply(400, { error: "Give NWS zone ids or a U.S. bounding box." });
+      try {
+        const zones = refs.length ? await getZones(refs) : [];
+        const zoneBox = bbox(zones.flatMap((z) => z.rings));
+        const area = validBox
+          ? zoneBox
+            ? { minLon: Math.min(box[0], zoneBox.minLon), minLat: Math.min(box[1], zoneBox.minLat), maxLon: Math.max(box[2], zoneBox.maxLon), maxLat: Math.max(box[3], zoneBox.maxLat) }
+            : { minLon: box[0], minLat: box[1], maxLon: box[2], maxLat: box[3] }
+          : zoneBox;
+        return reply(200, { zones, places: area ? placesIn(area) : [] }, "public, max-age=3600");
+      } catch {
+        return reply(503, { error: "Alert area unavailable." });
       }
     }
     case "/api/history": {

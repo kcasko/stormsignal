@@ -37,6 +37,9 @@ function liveWeather(id = "kalamazoo", gusty = false) {
 }
 async function mockApi(page: Page, handler?: (id: string) => { status?: number; body: unknown }) {
   await page.route("**/api/history?**", (route) => route.fulfill({ json: { tracked: true, snapshots: [] } }));
+  await page.route("**/api/area?**", (route) =>
+    route.fulfill({ json: { zones: [], places: [{ name: "Grand Rapids", lat: 42.96, lon: -85.66 }, { name: "Lansing", lat: 42.71, lon: -84.56 }] } }),
+  );
   await page.route("**/api/geocode?**", (route) =>
     route.fulfill({
       json: { results: [{ id: "pt:40.024,-105.251", label: "Boulder, CO", latitude: 40.024, longitude: -105.251, source: "place" }] },
@@ -171,6 +174,20 @@ test("drift panel and what-would-change explain the scenario", async ({ page }) 
   await expect(page.locator(".trend")).toContainText("Trending worse");
   await expect(page.locator(".drift-changes")).toContainText("33 mph → 60 mph");
   await expect(page.locator(".verdict .cf")).toContainText("Wind gusts stayed below 58 mph");
+});
+
+test("alerts show a labelled area map, their timeline, and alerts that ended", async ({ page }) => {
+  await mockApi(page);
+  await page.goto("/#overview?src=thunderstorm");
+  const map = page.getByRole("img", { name: /Map of the simulated Severe Thunderstorm Watch area\. Kalamazoo, MI is inside it/ });
+  await expect(map).toBeVisible();
+  await expect(page.locator(".alert-map").first()).toContainText("Grand Rapids");
+  await expect(page.locator(".alert").first().locator(".timeline li")).toHaveText([/Issued/, /Updated/, /Scheduled to end/]);
+  await expect(page.locator(".ended")).toContainText("Special Weather Statement");
+  await expect(page.locator(".ended")).toContainText("Expired");
+  await page.locator(".src select").selectOption("winter");
+  await expect(page.locator(".ended")).toContainText("Winter Storm Watch");
+  await expect(page.locator(".ended .state")).toHaveText("Upgraded");
 });
 
 test("calendar export is off for simulated data and available for live deadlines", async ({ page }) => {

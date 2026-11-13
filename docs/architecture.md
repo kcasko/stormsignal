@@ -37,14 +37,17 @@ One origin for users: CloudFront serves the static app and proxies `/api/*`, so 
 | Monitoring | CloudWatch Logs + one alarm | Structured JSON log line per request (location, latency, source availability, level). No user data is logged. |
 | IaC | AWS SAM (`template.yaml`) | Manual `sam deploy`. No pipeline to manage. |
 
-Not used, on purpose: Step Functions, SQS, Bedrock/any LLM, Cognito, a map/radar provider. None of them would improve the product. DynamoDB and EventBridge Scheduler earned their place with one feature that needs them: forecast history.
+| Alert maps | NWS polygons and zone outlines (`/api/area`) drawn as SVG | Storm-based warnings come with a polygon; others list NWS zones, whose outlines the Lambda fetches from `api.weather.gov/zones/*` (allow-listed paths, cached 24 h, simplified). Town labels come from the bundled Census places, ranked by nearby ZIP count. No tile server, map key or third-party request. |
+| Alert lifecycle | NWS `references` + VTEC, plus the same snapshots | Every current alert lists its earlier versions, so "issued, updated, extended" works for any place. Snapshots also record active alerts (saved whenever they change), which shows alerts that ended: VTEC `CAN` → cancelled, `UPG` → upgraded, past its end → expired, otherwise "no longer listed" (never guessed as cancelled). |
+
+Not used, on purpose: Step Functions, SQS, Bedrock/any LLM, Cognito, a map/radar tile provider. None of them would improve the product. DynamoDB and EventBridge Scheduler earned their place with the features that need them: forecast and alert history.
 
 ## Code map
 
 | File | Role |
 | --- | --- |
 | `backend/weather.ts` | NWS client (`nwsClient`): point lookup → hourly forecast, gridpoint layers, nearest station observation, active alerts. URL allow-listing, 8 s timeouts, payload caps, unit conversion, normalization. |
-| `backend/handler.ts` | Lambda handler: `/api/weather` (listed city or `pt:lat,lon` for any U.S. point), `/api/geocode`, `/api/history`, `/api/rules`, `/api/locations`, `/api/health`; plus the `snapshot` entry point for EventBridge Scheduler. |
+| `backend/handler.ts` | Lambda handler: `/api/weather` (listed city or `pt:lat,lon` for any U.S. point), `/api/geocode`, `/api/history`, `/api/area` (alert-map zones and place labels), `/api/rules`, `/api/locations`, `/api/health`; plus the `snapshot` entry point for EventBridge Scheduler. |
 | `backend/geocode.ts` | ZIP/place search from bundled Census data (`backend/data/`, built by `scripts/build-gazetteer.ts`), street addresses via the Census Geocoder, point-id validation (U.S. only, 3-decimal rounding). |
 | `backend/history.ts` | History storage (DynamoDB in AWS, a JSON file in `.data/` locally, memory in tests) and `takeSnapshots`. |
 | `shared/drift.ts` | Compares the same forecast hours between the oldest snapshot in the last 24 h and now: changes in gusts, thunder, snow, ice, temperature; trend (worse / better / steady / shifting). |

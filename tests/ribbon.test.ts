@@ -17,6 +17,9 @@ describe("hour-by-hour signal ribbon", () => {
     const w = weather(undefined, { alerts: [alert("Wind Advisory", { ends: new Date(T0 + 4 * H).toISOString() })] });
     const r = hourlySignal(w, assess(w, T0));
     expect(r.slice(0, 5).map((h) => h.level)).toEqual(["moderate", "moderate", "moderate", "moderate", "low"]);
+    // The stated run ends when the alert does, not at the end of the hourly cell.
+    const a = assess(w, T0 + 0.25 * H);
+    expect(peakRun(hourlySignal(w, a), a.factors)?.end).toBe(T0 + 4 * H);
   });
 
   it("never shows Low for hours without forecast data", () => {

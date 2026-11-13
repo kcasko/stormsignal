@@ -55,6 +55,11 @@ export function alert(event: string, over: Partial<Alert> = {}): Alert {
     ends: new Date(T0 + 6 * H).toISOString(),
     area: "Kalamazoo",
     url: "https://alerts.weather.gov/",
+    messageType: "Alert",
+    vtec: null,
+    previous: [],
+    geometry: null,
+    zones: [],
     ...over,
   };
 }

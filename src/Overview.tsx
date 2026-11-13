@@ -5,6 +5,8 @@ import { AlertItem, FactorList, LevelScale, Limitations, WhatWouldChange } from 
 import { hourlySignal, peakRun } from "../shared/ribbon";
 import { levelName } from "../shared/rules";
 import { DriftPanel } from "./Drift";
+import { EndedAlerts } from "./AlertArea";
+import { activeStory, endedStories } from "../shared/alertHistory";
 import type { HistoryState } from "./useHistory";
 import { clock, day, hourOnly, stamp, unknown } from "./format";
 
@@ -97,8 +99,22 @@ export function Overview({ weather, assessment, loading, now, go, history, simul
           </p>
         ) : (
           weather.alerts.map((a) => (
-            <AlertItem key={a.id} alert={a} zone={zone} simulated={simulated} />
+            <AlertItem
+              key={a.id}
+              alert={a}
+              zone={zone}
+              simulated={simulated}
+              map={{ lat: weather.location.latitude, lon: weather.location.longitude, place: weather.location.name.replace(/^Near /, "") }}
+              story={activeStory(a, history.snapshots, now)}
+            />
           ))
+        )}
+        {weather && (
+          <EndedAlerts
+            stories={endedStories(weather.availability.alerts ? weather.alerts : null, history.snapshots, now)}
+            zone={zone}
+            simulated={simulated}
+          />
         )}
 
         <h2 className="section-h">Now</h2>
@@ -310,7 +326,7 @@ export function Overview({ weather, assessment, loading, now, go, history, simul
 /** 24 hourly cells coloured by the highest factor that applies to each hour. */
 function SignalRibbon({ weather, assessment, zone }: { weather: Weather; assessment: Assessment; zone: string }) {
   const hours = hourlySignal(weather, assessment);
-  const peak = peakRun(hours);
+  const peak = peakRun(hours, assessment.factors);
   const runs: string[] = [];
   for (let i = 0; i < hours.length; ) {
     let j = i;

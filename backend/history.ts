@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { locations } from "../shared/locations";
 import { assess } from "../shared/riskEngine";
-import { toSnapshot, type Snapshot } from "../shared/drift";
+import { alertSignature, toSnapshot, toSnapshotAlerts, type Snapshot } from "../shared/drift";
 import { getWeather } from "./weather";
 
 export interface HistoryStore {
@@ -99,7 +99,8 @@ export function historyStore(): HistoryStore {
 }
 
 /**
- * Saves a snapshot per catalog city when NWS issued a new forecast, or at least every 3 hours.
+ * Saves a snapshot per catalog city when NWS issued a new forecast or the set of alerts changed,
+ * or at least every 3 hours.
  * Failures for one city never stop the others.
  */
 export async function takeSnapshots(s: HistoryStore = historyStore(), fetcher: typeof fetch = fetch, now = Date.now()) {
@@ -112,7 +113,9 @@ export async function takeSnapshots(s: HistoryStore = historyStore(), fetcher: t
         continue;
       }
       const prior = (await s.list(l.id, now - 3 * 3600000)).sort((a, b) => b.capturedAt.localeCompare(a.capturedAt))[0];
-      if (prior && prior.issuedAt === weather.forecastUpdatedAt) {
+      // Save when NWS reissued the forecast or any alert was issued, updated or dropped.
+      const alertsSame = alertSignature(prior?.alerts) === alertSignature(toSnapshotAlerts(weather));
+      if (prior && prior.issuedAt === weather.forecastUpdatedAt && alertsSame) {
         results[l.id] = "skipped: no new NWS issuance";
         continue;
       }

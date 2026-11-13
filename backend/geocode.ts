@@ -90,3 +90,41 @@ export async function geocode(q: string, fetcher: Fetcher = fetch): Promise<Plac
     })
     .filter((p) => parsePointId(p.id));
 }
+
+// ZIP centroids bucketed into 0.1° cells, built on first use. Used as a population proxy:
+// populous places have many ZIP codes close to their center.
+let zipGrid: Map<string, number[][]> | null = null;
+function zipsNear(lat: number, lon: number, km = 8) {
+  if (!zipGrid) {
+    zipGrid = new Map();
+    for (const [la, lo] of Object.values(ZIPS)) {
+      const k = `${Math.floor(la * 10)},${Math.floor(lo * 10)}`;
+      const cell = zipGrid.get(k);
+      if (cell) cell.push([la, lo]);
+      else zipGrid.set(k, [[la, lo]]);
+    }
+  }
+  const kx = Math.cos((lat * Math.PI) / 180);
+  let n = 0;
+  for (let dy = -1; dy <= 1; dy++)
+    for (let dx = -1; dx <= 1; dx++)
+      for (const [la, lo] of zipGrid.get(`${Math.floor(lat * 10) + dy},${Math.floor(lon * 10) + dx}`) ?? [])
+        if (Math.hypot((la - lat) * 111, (lo - lon) * 111 * kx) <= km) n++;
+  return n;
+}
+
+/** The most prominent Census places inside a box, for labelling alert maps. Bundled data only, no request. */
+export function placesIn(box: { minLon: number; minLat: number; maxLon: number; maxLat: number }, limit = 8) {
+  return PLACES.filter(([, , lat, lon]) => lat >= box.minLat && lat <= box.maxLat && lon >= box.minLon && lon <= box.maxLon)
+    .sort((a, b) => b[4] - a[4])
+    .slice(0, 300)
+    .map((p) => ({ p, score: zipsNear(p[2], p[3]) * 1000 + p[4] }))
+    .sort((a, b) => b.score - a.score)
+    .reduce<[string, string, number, number, number][]>((kept, { p }) => {
+      // One label per cluster: skip places within about a sixth of the box of one already kept.
+      const gap = Math.max(box.maxLat - box.minLat, 0.2) / 6;
+      if (kept.length < limit && kept.every((k) => Math.hypot(k[2] - p[2], (k[3] - p[3]) * 0.75) > gap)) kept.push(p);
+      return kept;
+    }, [])
+    .map(([name, , lat, lon]) => ({ name, lat, lon }));
+}

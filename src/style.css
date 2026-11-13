@@ -537,3 +537,29 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 .phase.first .phase-head { border-bottom-color: var(--lv-critical); }
 .hazard-list li { border-left: 3px solid var(--rule-strong); padding-left: 10px; }
 .progress i { background: var(--lv-low); transition: width 240ms ease; }
+
+/* ---------- Alert map, timeline, ended alerts ---------- */
+.alert-map { margin: 4px 0 0; display: grid; gap: 4px; }
+.alert-map svg { width: 100%; height: auto; display: block; background: var(--paper); border: 1px solid var(--rule); }
+.alert-map .zones { fill: color-mix(in srgb, var(--c) 14%, transparent); stroke: var(--c); stroke-width: 1; stroke-opacity: 0.6; }
+.alert-map .poly { fill: color-mix(in srgb, var(--c) 30%, transparent); stroke: var(--c); stroke-width: 2; stroke-linejoin: round; }
+.alert-map .town circle { fill: var(--muted); }
+.alert-map text { font: 500 9.5px/1 var(--sans); fill: var(--muted); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; stroke-linejoin: round; }
+.alert-map .you circle { fill: var(--ink); }
+.alert-map .you .halo { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.alert-map .you text { fill: var(--ink); font-weight: 700; font-size: 10.5px; }
+.alert-map .scalebar path { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.alert-map .scalebar text { fill: var(--ink); font-family: var(--mono); font-size: 9px; }
+.timeline { list-style: none; margin: 2px 0 0; padding: 0 0 0 14px; border-left: 2px solid var(--rule); display: grid; gap: 6px; font-size: 13px; }
+.timeline li { position: relative; }
+.timeline li::before { content: ""; position: absolute; left: -19px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
+.timeline li.future { color: var(--muted); }
+.timeline li.future::before { background: var(--sheet); border: 1.5px solid var(--muted); width: 5px; height: 5px; }
+.timeline .num { font-size: 12px; }
+.ended { margin-top: 8px; display: grid; gap: 10px; }
+.ended ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.ended li { border-top: 1px dashed var(--rule-strong); padding-top: 10px; display: grid; gap: 8px; }
+.ended-head { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.ended-head strong { font: 600 16px/1.2 var(--serif); }
+.state { font: 600 10.5px/1 var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border: 1px solid currentColor; padding: 3px 5px; }
+@media print { .alert-map svg { border-color: #999; } }

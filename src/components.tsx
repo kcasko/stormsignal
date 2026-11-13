@@ -4,6 +4,8 @@ import { LEVELS } from "../shared/types";
 import { levelName } from "../shared/rules";
 import { stamp } from "./format";
 import { whatWouldChange } from "../shared/counterfactual";
+import type { AlertStory } from "../shared/alertHistory";
+import { AlertMap, AlertTimeline } from "./AlertArea";
 
 /** Level word + five-segment glyph. Never colour alone. */
 export function LevelMark({
@@ -117,10 +119,15 @@ export function AlertItem({
   alert,
   zone,
   simulated,
+  map,
+  story,
 }: {
   alert: Alert;
   zone: string;
   simulated: boolean;
+  /** Where the user is, for the area map. */
+  map?: { lat: number; lon: number; place: string };
+  story?: AlertStory;
 }) {
   return (
     <article className={`alert alert-${alert.kind}`}>
@@ -138,6 +145,8 @@ export function AlertItem({
         </p>
       </header>
       {alert.headline && <p className="headline">{alert.headline}</p>}
+      {map && <AlertMap alert={alert} lat={map.lat} lon={map.lon} place={map.place} simulated={simulated} />}
+      {story && <AlertTimeline story={story} zone={zone} />}
       <details open={alert.kind === "warning"}>
         <summary>Instructions and full text</summary>
         <h4>Instructions</h4>
