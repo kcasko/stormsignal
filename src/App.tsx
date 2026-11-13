@@ -278,6 +278,8 @@ export function App() {
             setHours={setHours}
             custom={custom}
             setCustom={setCustom}
+            routeOrigin={locationId}
+            simulated={simulated}
           />
         )}
         {page === "prep" && <StormPrep weather={weather} assessment={assessment} />}

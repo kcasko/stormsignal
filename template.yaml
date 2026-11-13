@@ -70,6 +70,9 @@ Resources:
               - Effect: Allow
                 Action: dynamodb:Query
                 Resource: !GetAtt HistoryTable.Arn
+              - Effect: Allow
+                Action: geo-routes:CalculateRoutes
+                Resource: "*"
   WeatherApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -107,6 +110,9 @@ Resources:
         Geocode:
           Type: HttpApi
           Properties: { ApiId: !Ref WeatherApi, Path: /api/geocode, Method: GET, PayloadFormatVersion: "2.0" }
+        Route:
+          Type: HttpApi
+          Properties: { ApiId: !Ref WeatherApi, Path: /api/route, Method: GET, PayloadFormatVersion: "2.0" }
         History:
           Type: HttpApi
           Properties: { ApiId: !Ref WeatherApi, Path: /api/history, Method: GET, PayloadFormatVersion: "2.0" }

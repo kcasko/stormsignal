@@ -7,6 +7,7 @@ import { historyStore, takeSnapshots, RETENTION_HOURS } from "./history";
 import { locations } from "../shared/locations";
 import { assess } from "../shared/riskEngine";
 import { snsPublisher } from "./watch";
+import { routeCities, routePlan } from "./route";
 import { rulesCatalog } from "../shared/rulesCatalog";
 
 const VERSION = "0.5.0";
@@ -91,6 +92,17 @@ export async function handler(event: Event) {
         return reply(200, { zones, places: area ? placesIn(area) : [] }, "public, max-age=3600");
       } catch {
         return reply(503, { error: "Alert area unavailable." });
+      }
+    }
+    case "/api/route": {
+      const from = (q.from ?? "").trim();
+      const to = (q.to ?? "").trim();
+      if (!routeCities(from, to)) return reply(400, { error: "Choose two different listed cities." });
+      try {
+        return reply(200, await routePlan(from, to));
+      } catch (error) {
+        console.error(JSON.stringify({ msg: "route_failed", error: String(error) }));
+        return reply(503, { error: "Routing service or forecast checks unavailable. Try again later." });
       }
     }
     case "/api/history": {

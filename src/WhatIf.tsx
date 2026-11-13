@@ -2,6 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import type { Weather, Assessment } from "../shared/types";
 import { assess } from "../shared/riskEngine";
 import { ForecastDial } from "./ForecastDial";
+import { RoutePlanner } from "./RoutePlanner";
 import {
   ACTIVITIES,
   compareOptions,
@@ -31,6 +32,8 @@ export interface WhatIfProps {
   setCustom: (t: number | null) => void;
   embedded?: boolean;
   assessment?: Assessment | null;
+  routeOrigin?: string;
+  simulated?: boolean;
 }
 
 const durationLabel = (h: number) =>
@@ -48,6 +51,8 @@ export function WhatIf({
   setCustom,
   embedded = false,
   assessment,
+  routeOrigin = "kalamazoo",
+  simulated = false,
 }: WhatIfProps) {
   const [selected, setSelected] = useState("A");
   const zone = weather?.location.timeZone ?? "America/Detroit";
@@ -87,6 +92,7 @@ export function WhatIf({
         </p>}
       </header>
 
+      {!embedded && <RoutePlanner origin={routeOrigin} simulated={simulated} />}
       <div className="decision-workspace">
       {weather && dialAssessment && <ForecastDial weather={weather} assessment={dialAssessment} options={options} selected={activeKey} />}
       <div className="decision-panel">

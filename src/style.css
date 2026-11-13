@@ -956,3 +956,15 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 .embed-preview { display: block; height: 28px; width: auto; }
 .embed-code { width: 100%; }
 .embed-code textarea { width: 100%; font: 12px/1.4 var(--mono); padding: 8px; border: 1px solid var(--rule-strong); background: var(--paper); color: var(--ink); resize: vertical; }
+
+
+/* Route planning: a quiet extension of the existing editorial decision page. */
+.route-plan { border-block: 1px solid var(--line, #ccc); padding: 1.25rem 0; margin-bottom: 1.5rem; }
+.route-plan p { max-width: 68ch; }
+.route-controls { display: flex; flex-wrap: wrap; align-items: end; gap: .8rem; margin: 1rem 0; }
+.route-controls label { display: grid; gap: .3rem; flex: 1 1 175px; font-weight: 600; }
+.route-controls select { width: 100%; min-width: 0; padding: .65rem; color: inherit; background: var(--paper, #fff); border: 1px solid currentColor; border-radius: 3px; }
+.route-controls button { padding: .7rem 1rem; cursor: pointer; }
+.route-results { border-left: 3px solid currentColor; padding: .4rem 1rem; margin: 1rem 0; }
+.route-results ol { padding-left: 1.5rem; }
+.route-results li { margin: .6rem 0; }

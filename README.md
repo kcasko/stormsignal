@@ -24,7 +24,7 @@ Requires Node.js ≥ 22.12.
 ```powershell
 npm ci
 npm run dev        # web on http://127.0.0.1:5173, API on 127.0.0.1:8787
-npm test           # 91 unit/integration tests
+npm test           # 94 unit/integration tests
 npm run e2e        # 46 Playwright tests: desktop + mobile, axe accessibility, offline reload, print
 npm run build      # type check, frontend to dist/, Lambda bundle to build/handler.mjs
 npx tsx scripts/live-check.ts   # real NWS check for all cities
@@ -61,7 +61,8 @@ Deploys `template.yaml` to `us-east-1` (the account default): private S3 + Cloud
 ## Docs
 
 - `docs/architecture.md`: AWS design, NWS data, the rule tables, security and cost controls
-- `docs/watch.md`: optional, email-confirmed SNS forecast risk increase watch (not enabled until configured and deployed)
+- `docs/watch.md`: optional, email-confirmed SNS forecast risk increase watch
+- `docs/routes.md`: Amazon Location route estimates and three-point NWS weather checks
 - `docs/design.md`: wireframes, hierarchy, design tokens
 - `docs/testing.md`: what is tested and what was verified by hand
 - `docs/demo-script.md`: video under three minutes
