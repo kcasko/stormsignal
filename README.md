@@ -62,7 +62,8 @@ Deploys `template.yaml` to `us-east-1` (the account default): private S3 + Cloud
 
 - `docs/architecture.md`: AWS design, NWS data, the rule tables, security and cost controls
 - `docs/watch.md`: optional, email-confirmed SNS forecast risk increase watch
-- `docs/routes.md`: Amazon Location route estimates and three-point NWS weather checks
+- `docs/routes.md`: interactive route maps, warning boundaries, and departure-aware NWS forecasts
+- `docs/cost-controls.md`: project-tagged AWS budget, account-wide guardrail, credit and tagging limitations
 - `docs/design.md`: wireframes, hierarchy, design tokens
 - `docs/testing.md`: what is tested and what was verified by hand
 - `docs/demo-script.md`: video under three minutes

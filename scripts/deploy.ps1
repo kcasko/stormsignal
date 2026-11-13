@@ -7,7 +7,8 @@ param(
   [Parameter(Mandatory = $true)][string]$UserAgent,
   [string]$BudgetEmail = "",
   [string]$WatchEmail = "",
-  [string]$WatchLocation = "kalamazoo"
+  [string]$WatchLocation = "kalamazoo",
+  [int]$MonthlyBudgetUsd = 10
 )
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
@@ -20,13 +21,23 @@ Write-Host "Deploying stack '$Stack' to account $($identity.Account) in $Region 
 npm run build
 if ($LASTEXITCODE) { throw "build failed" }
 
-$overrides = @("NwsUserAgent=""$UserAgent""")
+$existing = aws cloudformation describe-stacks --stack-name $Stack --region $Region --query "Stacks[0].Parameters" --output json 2>$null
+if ($LASTEXITCODE -eq 0 -and $existing) {
+  $previous = @{}
+  foreach ($item in ($existing | ConvertFrom-Json)) { $previous[$item.ParameterKey] = $item.ParameterValue }
+  if (-not $BudgetEmail) { $BudgetEmail = $previous["BudgetEmail"] }
+  if (-not $WatchEmail) { $WatchEmail = $previous["WatchEmail"] }
+  if (-not $PSBoundParameters.ContainsKey("WatchLocation") -and $previous["WatchLocation"]) { $WatchLocation = $previous["WatchLocation"] }
+  if (-not $PSBoundParameters.ContainsKey("MonthlyBudgetUsd") -and $previous["MonthlyBudgetUsd"]) { $MonthlyBudgetUsd = [int]$previous["MonthlyBudgetUsd"] }
+}
+
+$overrides = @("NwsUserAgent=""$UserAgent""", "MonthlyBudgetUsd=$MonthlyBudgetUsd")
 if ($BudgetEmail) { $overrides += "BudgetEmail=$BudgetEmail" }
 if ($WatchEmail) { $overrides += "WatchEmail=$WatchEmail" }
 $overrides += "WatchLocation=$WatchLocation"
 sam deploy --template-file template.yaml --stack-name $Stack --region $Region `
   --capabilities CAPABILITY_IAM --resolve-s3 --no-fail-on-empty-changeset `
-  --parameter-overrides $overrides
+  --tags Project=storm-signal --parameter-overrides $overrides
 if ($LASTEXITCODE) { throw "sam deploy failed" }
 
 $outputs = aws cloudformation describe-stacks --stack-name $Stack --region $Region `

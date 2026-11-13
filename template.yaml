@@ -17,7 +17,8 @@ Parameters:
     Description: Optional. Email for a monthly cost budget alert. Leave blank to skip the budget.
   MonthlyBudgetUsd:
     Type: Number
-    Default: 5
+    Default: 10
+    Description: Project-specific monthly gross usage alert threshold. Credits are excluded so the budget measures actual AWS resource consumption.
   WatchEmail:
     Type: String
     Default: ""
@@ -331,6 +332,12 @@ Resources:
         BudgetType: COST
         TimeUnit: MONTHLY
         BudgetLimit: { Amount: !Ref MonthlyBudgetUsd, Unit: USD }
+        # Use the activated Project cost allocation tag to avoid reporting unrelated AWS experiments.
+        CostFilters:
+          TagKeyValue: ["user:Project$storm-signal"]
+        CostTypes:
+          IncludeCredit: false
+          IncludeRefund: false
       NotificationsWithSubscribers:
         - Notification: { NotificationType: ACTUAL, ComparisonOperator: GREATER_THAN, Threshold: 50, ThresholdType: PERCENTAGE }
           Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref BudgetEmail }]
