@@ -745,7 +745,7 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 .overview .current-weather { padding-bottom: 14px; row-gap: 5px; }
 .overview .current-place h2 { font-size: 27px; margin-top: 5px; }
 .overview .current-temperature { font-size: 44px; }
-.whatif:not(.embedded) .forecast-dial { position: sticky; top: 20px; }
+.whatif:not(.embedded) .forecast-dial { position: static; }
 .option-head .key[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--sheet); }
 @media (prefers-color-scheme: dark) { .option-head .key[aria-pressed="true"] { color: var(--paper); } }
 @media (max-width: 960px) { .whatif:not(.embedded) .forecast-dial { position: static; } }
