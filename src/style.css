@@ -499,8 +499,8 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 }
 .verdict .verdict-actions { margin-top: 10px; }
 
-.scale { display: grid; gap: 14px; color: var(--c); }
-.scale-word { font: 600 clamp(56px, 9vw, 104px)/0.9 var(--serif); letter-spacing: -0.035em; }
+.scale { display: grid; gap: 18px; color: var(--c); }
+.scale-word { font: 600 clamp(56px, 9vw, 104px)/1.12 var(--serif); letter-spacing: -0.035em; }
 .scale-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; max-width: 520px; }
 .scale-steps li { display: grid; gap: 6px; color: var(--muted); font: 600 11px/1 var(--sans); letter-spacing: 0.06em; text-transform: uppercase; }
 .scale-steps i { display: block; height: 10px; border: 1.5px solid var(--c); background: transparent; }
