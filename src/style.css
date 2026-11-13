@@ -978,3 +978,8 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 .route-map-label { font: 600 16px system-ui, sans-serif; fill: currentColor; paint-order: stroke; stroke: var(--paper, #fff); stroke-width: 4; }
 .route-warning-review { padding: .7rem 0; border-block: 1px solid var(--line, #aaa); }
 .route-warning-review h4 { margin: .25rem 0; }
+
+.route-leaflet { width:100%; height: min(480px,65vh); min-height:300px; z-index:0; border:1px solid var(--line,#bbb); border-radius:4px; }
+.route-street-map { margin:1rem 0; }
+.route-street-map details { margin-top:.6rem; }
+.route-street-map .leaflet-container { font-family:inherit; }

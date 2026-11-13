@@ -2,6 +2,10 @@
 
 The "Weather along a trip" section on **When to go** asks Amazon Location Routes V2 for a car route between two distinct cities from `stormsignal.config.json`. The server returns estimated distance and driving duration, then queries the National Weather Service at the route start, approximate middle, and end. The interface shows the weather risk and active NWS warnings at those three samples.
 
+The screen now embeds an **interactive, zoomable OpenStreetMap street map using Leaflet**, with start/end markers, the driving route and official NWS warning-area overlays. A static offline route diagram remains available. The frontend requests OpenStreetMap tiles only when the route map is opened, with contributor attribution. Route requests and NWS lookups remain server-side; no AWS keys are exposed in the browser.
+
+The route planner offers departure choices from now to 36 hours ahead. It uses the AWS estimated driving duration and **distance along the route polyline**, not its number of vertices, to estimate arrival at each of three points. The risk at each point is calculated against the one-hour NWS forecast window beginning at that estimated arrival. Missing future forecast coverage is Unknown, never Low. Forecast-based risk excludes active warning overlays, which are explicitly marked as **active at check time**, not predictions of future alerts. Arrival timing is approximate and can shift with traffic.
+
 The screen also draws a geographical route-shape diagram with start/end markers and NWS warning-area shading. The backend compares **full, unsimplified route geometry** to available storm polygons and NWS warning-zone outlines. This can detect intersections missed by the three-point samples. It checks the active feeds for MI, IN, IL, OH and WI (the region of the configured city routes); if any feed or relevant zone boundary is unavailable, it explicitly reports **incomplete warning coverage**. The outline is not a street-map baselayer or turn-by-turn navigation.
 
 ## Boundaries and caveats
@@ -17,4 +21,4 @@ The screen also draws a geographical route-shape diagram with start/end markers 
 
 The Lambda's narrowly scoped permission is `geo-routes:CalculateRoutes` (the AWS operation does not use a route-calculator resource). The API route is `GET /api/route?from=kalamazoo&to=grand-rapids`. No AWS credentials are placed in the browser. The React view is under When to go.
 
-Potential next iteration: add a street-map baselayer and route departure-time-aware forecast checks (current results use the latest forecast rather than predicting conditions when the driver reaches each point).
+Potential next iteration: allow arbitrary destinations and more than three forecast sample points. Current arrival estimates distribute AWS's total driving time proportionally along route distance and do not incorporate stop time, future traffic, or real-time road closures. Standard OpenStreetMap tiles require network access and follow OSM tile usage rules; the offline route diagram remains available.

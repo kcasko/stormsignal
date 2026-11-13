@@ -8,6 +8,7 @@ import { locations } from "../shared/locations";
 import { assess } from "../shared/riskEngine";
 import { snsPublisher } from "./watch";
 import { routeCities, routePlan } from "./route";
+import { parseDeparture } from "../shared/routeTiming";
 import { rulesCatalog } from "../shared/rulesCatalog";
 
 const VERSION = "0.5.0";
@@ -98,8 +99,10 @@ export async function handler(event: Event) {
       const from = (q.from ?? "").trim();
       const to = (q.to ?? "").trim();
       if (!routeCities(from, to)) return reply(400, { error: "Choose two different listed cities." });
+      const depart = q.depart ? parseDeparture(q.depart) : Date.now();
+      if (depart === null) return reply(400, { error: "Departure must be a UTC date within the next 48 hours." });
       try {
-        return reply(200, await routePlan(from, to));
+        return reply(200, await routePlan(from, to, depart));
       } catch (error) {
         console.error(JSON.stringify({ msg: "route_failed", error: String(error) }));
         return reply(503, { error: "Routing service or forecast checks unavailable. Try again later." });
