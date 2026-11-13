@@ -19,6 +19,7 @@ AWS SNS sends a confirmation email. **The recipient must select Confirm subscrip
 ## Rules
 
 - Only risk increases trigger email, e.g. Moderate to High.
+- The email compares available matching future forecast hours in the previous and current snapshots, reports meaningful increases in wind, thunder chance, snow or ice, and gives the peak/increase time in the city's local time. It never invents missing measurements or claims the change caused the level increase; if reliable evidence is unavailable, it says so.
 - Unknown values, first snapshots, unchanged levels, decreases, and different locations do not trigger email.
 - An identical forecast issuance is skipped by the existing history logic.
 - After a new issuance is saved, a failed SNS publish is logged but does not stop other cities being processed.
