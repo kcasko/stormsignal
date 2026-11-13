@@ -37,6 +37,9 @@ function liveWeather(id = "kalamazoo", gusty = false) {
 }
 async function mockApi(page: Page, handler?: (id: string) => { status?: number; body: unknown }) {
   await page.route("**/api/history?**", (route) => route.fulfill({ json: { tracked: true, snapshots: [] } }));
+  await page.route("**/api/badge?**", (route) =>
+    route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="28"><title>badge</title></svg>' }),
+  );
   await page.route("**/api/area?**", (route) =>
     route.fulfill({ json: { zones: [], places: [{ name: "Grand Rapids", lat: 42.96, lon: -85.66 }, { name: "Lansing", lat: 42.71, lon: -84.56 }] } }),
   );
@@ -211,6 +214,15 @@ test("quiet days offer the labelled storm demo; When to go answers first", async
   await expect(page.locator(".banner-sim")).toBeVisible();
   await page.getByRole("link", { name: "When to go" }).first().click();
   await expect(page.locator(".options-summary")).toContainText("Highest: B, leave in 3 hours (High)");
+});
+
+test("overview offers a copyable live badge for the current place", async ({ page }) => {
+  await mockApi(page);
+  await page.goto("/#overview?loc=kalamazoo");
+  await page.getByText(/Put a live badge for Kalamazoo, MI on your website/).click();
+  await expect(page.locator(".embed textarea")).toHaveValue(/\/api\/badge\?loc=kalamazoo/);
+  await expect(page.locator(".embed textarea")).toHaveValue(/alt="Storm Signal weather risk level for Kalamazoo, MI"/);
+  await expect(page.getByRole("img", { name: "Storm Signal weather risk level for Kalamazoo, MI" })).toBeVisible();
 });
 
 test("overview is an answer page; the dial lives on When to go", async ({ page }) => {

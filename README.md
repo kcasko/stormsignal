@@ -37,6 +37,14 @@ Use the source menu in the header to switch between **Live NWS data** and four *
 
 Any point NWS forecasts for (U.S. states, DC and territories). Forecast history is saved for nine listed cities: Kalamazoo, Grand Rapids, Battle Creek, Portage, Benton Harbor, South Haven, Detroit (MI), Chicago (IL), Indianapolis (IN).
 
+## Run it for your own area
+
+Edit one file, `stormsignal.config.json`, to list your cities, then deploy. Step-by-step guide, costs, threshold changes and the embeddable badge: **[docs/reuse.md](docs/reuse.md)**.
+
+```html
+<a href="https://d3p9tcn7282g7r.cloudfront.net/#overview?loc=kalamazoo"><img src="https://d3p9tcn7282g7r.cloudfront.net/api/badge?loc=kalamazoo" alt="Storm Signal weather risk level for Kalamazoo, MI" height="28"></a>
+```
+
 ## Deploy (manual, creates billable resources)
 
 ```powershell

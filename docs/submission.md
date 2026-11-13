@@ -66,9 +66,10 @@ The pattern underneath Storm Signal fits any "public data → explained decision
 3. **A deterministic rule engine shared by Lambda and the browser,** where every rule returns *evidence* (value, threshold, time window) instead of a bare score, and missing data yields "Unknown", never the safest answer.
 4. **A scheduled snapshot plus TTL table** turns any "latest only" public API into a history you can reason about ("is this forecast settling or still moving?"), for pennies.
 5. **Published rules** (`/api/rules`): others can audit the thresholds or reuse them in their own tools.
-6. **One `template.yaml`, one `sam deploy`:** throttling, log retention, an alarm and a budget included.
+6. **An edge-cached SVG badge** (`/api/badge?loc=…`, a CloudFront cache policy keyed on `loc`): any school, event or club site can embed the live level with one line of HTML, and popular badges cost almost nothing.
+7. **One `template.yaml`, one `sam deploy`:** throttling, log retention, an alarm and a budget included.
 
-Swap `nwsClient` and the rule tables, and the rest carries over. Code, template and rules: https://github.com/kcasko/stormsignal (MIT).
+**Run it for your own area in about 10 minutes:** fork, list your cities in one file (`stormsignal.config.json`), deploy. The step-by-step guide is in [docs/reuse.md](https://github.com/kcasko/stormsignal/blob/main/docs/reuse.md). Swap the NWS client and the rule tables, and the rest carries over to other public data. Code, template and rules: https://github.com/kcasko/stormsignal (MIT).
 
 ### What I learned
 

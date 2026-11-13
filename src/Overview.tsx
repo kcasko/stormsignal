@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Assessment, Weather } from "../shared/types";
 import { HOUR } from "../shared/rules";
 import { OVERVIEW_RULES } from "../shared/riskEngine";
@@ -197,6 +198,7 @@ export function Overview({
           <a className="cta" href="#whatif">Compare when to go →</a>
           <a className="cta secondary" href="#prep">Build a prep checklist →</a>
         </div>
+        {weather && <EmbedBadge id={weather.location.id} name={weather.location.name.replace(/^Near /, "")} />}
         <DriftPanel weather={weather} level={assessment?.level ?? null} history={history} now={now} simulated={simulated} />
       <details className="hourly" open aria-labelledby="hourly-h">
         <summary id="hourly-h">Hourly forecast</summary>
@@ -427,5 +429,35 @@ function SignalRibbon({ weather, assessment, zone }: { weather: Weather; assessm
         ))}
       </div>
     </figure>
+  );
+}
+
+/** Copy-paste snippet for a live badge on another website (school, event, club). Always live NWS data. */
+function EmbedBadge({ id, name }: { id: string; name: string }) {
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  const src = `${origin}/api/badge?loc=${encodeURIComponent(id)}`;
+  const href = `${origin}/#overview?loc=${encodeURIComponent(id)}`;
+  const code = `<a href="${href}"><img src="${src}" alt="Storm Signal weather risk level for ${name}" height="28"></a>`;
+  const [copied, setCopied] = useState(false);
+  return (
+    <details className="embed">
+      <summary>Put a live badge for {name} on your website</summary>
+      <p className="fine">
+        For a school, event or club page. It always shows live NWS data, updates about every 10 minutes and links back here.
+      </p>
+      <img className="embed-preview" src={`/api/badge?loc=${encodeURIComponent(id)}`} alt={`Storm Signal weather risk level for ${name}`} height={28} />
+      <label className="embed-code">
+        <span className="sr">Badge HTML to copy</span>
+        <textarea readOnly rows={3} value={code} onFocus={(e) => e.currentTarget.select()} />
+      </label>
+      <button
+        type="button"
+        onClick={() => {
+          navigator.clipboard?.writeText(code).then(() => setCopied(true), () => setCopied(false));
+        }}
+      >
+        {copied ? "Copied" : "Copy HTML"}
+      </button>
+    </details>
   );
 }

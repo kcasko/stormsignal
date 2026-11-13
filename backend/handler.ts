@@ -1,5 +1,6 @@
 import { getWeather } from "./weather";
-import { geocode, parsePointId, placesIn } from "./geocode";
+import { geocode, parsePointId, placesIn, searchLocal } from "./geocode";
+import { renderBadge } from "./badge";
 import { getZones, parseZoneRefs } from "./zones";
 import { bbox } from "../shared/geo";
 import { historyStore, takeSnapshots, RETENTION_HOURS } from "./history";
@@ -7,7 +8,7 @@ import { locations } from "../shared/locations";
 import { assess } from "../shared/riskEngine";
 import { rulesCatalog } from "../shared/rulesCatalog";
 
-const VERSION = "0.4.0";
+const VERSION = "0.5.0";
 type Event = {
   rawPath?: string;
   requestContext?: { http?: { method?: string } };
@@ -44,6 +45,30 @@ export async function handler(event: Event) {
         return reply(200, { results: await geocode(query) });
       } catch {
         return reply(503, { error: "Address lookup is unavailable. Try a ZIP or city name." });
+      }
+    }
+    case "/api/badge": {
+      // Embeddable SVG badge. loc = a listed city id, a pt:lat,lon id, or a 5-digit ZIP.
+      const raw = (q.loc ?? "").trim();
+      const id = /^\d{5}$/.test(raw) ? searchLocal(raw)[0]?.id ?? "" : raw;
+      const svg = (body: string, maxAge: number) => ({
+        statusCode: 200,
+        headers: {
+          "content-type": "image/svg+xml; charset=utf-8",
+          // CloudFront caches by loc for this long, so popular badges cost almost nothing.
+          "cache-control": `public, max-age=${maxAge}`,
+          "x-content-type-options": "nosniff",
+          "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'",
+        },
+        body,
+      });
+      if (!validLocation(id)) return svg(renderBadge("unknown", ""), 3600);
+      try {
+        const weather = await getWeather(id);
+        const level = weather.availability.forecast || weather.availability.alerts ? assess(weather, Date.now()).level : "unknown";
+        return svg(renderBadge(level, weather.location.name.replace(/^Near /, "")), level === "unknown" ? 120 : 600);
+      } catch {
+        return svg(renderBadge("unknown", ""), 120);
       }
     }
     case "/api/area": {

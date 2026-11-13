@@ -107,6 +107,9 @@ Resources:
         Area:
           Type: HttpApi
           Properties: { ApiId: !Ref WeatherApi, Path: /api/area, Method: GET, PayloadFormatVersion: "2.0" }
+        Badge:
+          Type: HttpApi
+          Properties: { ApiId: !Ref WeatherApi, Path: /api/badge, Method: GET, PayloadFormatVersion: "2.0" }
   WeatherErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -249,6 +252,14 @@ Resources:
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # Managed-CachingOptimized
           ResponseHeadersPolicyId: 67f7725c-6f97-4210-82d7-5512b31e9d03 # Managed-SecurityHeadersPolicy
         CacheBehaviors:
+          # Badges are embedded on other sites: cache each loc at the edge (TTL from the Lambda's max-age).
+          - PathPattern: /api/badge
+            TargetOriginId: api
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: !Ref BadgeCachePolicy
+            ResponseHeadersPolicyId: 67f7725c-6f97-4210-82d7-5512b31e9d03
           - PathPattern: /api/*
             TargetOriginId: api
             ViewerProtocolPolicy: https-only
@@ -256,6 +267,22 @@ Resources:
             CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # Managed-CachingDisabled
             OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac # Managed-AllViewerExceptHostHeader
             ResponseHeadersPolicyId: 67f7725c-6f97-4210-82d7-5512b31e9d03
+
+  BadgeCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: !Sub "${AWS::StackName}-badge"
+        Comment: Cache badges per loc; TTL follows the origin's Cache-Control.
+        MinTTL: 60
+        DefaultTTL: 600
+        MaxTTL: 3600
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          CookiesConfig: { CookieBehavior: none }
+          HeadersConfig: { HeaderBehavior: none }
+          QueryStringsConfig: { QueryStringBehavior: whitelist, QueryStrings: [loc] }
 
   # ---------- Cost guardrail (optional) ----------
   CostBudget:

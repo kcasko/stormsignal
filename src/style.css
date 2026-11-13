@@ -950,3 +950,9 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 /* When to go: numbered steps and the one-sentence answer. */
 .step { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 6px; border-radius: 50%; background: var(--accent); color: var(--paper); font: 700 11px/1 var(--sans); letter-spacing: 0; vertical-align: 1px; }
 .options-summary { font: 600 clamp(18px, 1.7vw, 21px)/1.4 var(--serif); margin: 0 0 12px; max-width: 60ch; }
+/* Embeddable badge snippet */
+.embed > summary { cursor: pointer; color: var(--accent); font-size: 14px; font-weight: 600; }
+.embed[open] { display: grid; gap: 10px; justify-items: start; padding: 12px 14px; border: 1px solid var(--rule); background: var(--sheet); }
+.embed-preview { display: block; height: 28px; width: auto; }
+.embed-code { width: 100%; }
+.embed-code textarea { width: 100%; font: 12px/1.4 var(--mono); padding: 8px; border: 1px solid var(--rule-strong); background: var(--paper); color: var(--ink); resize: vertical; }
