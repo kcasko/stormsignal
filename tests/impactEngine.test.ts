@@ -78,3 +78,16 @@ describe("impact engine edge cases", () => {
     expect(a.limitations.join(" ")).toMatch(/Winter Storm Warning begins Fri 4:00 PM, soon after/);
   });
 });
+
+describe("options summary", () => {
+  it("answers lowest and highest first, and never says safe", async () => {
+    const { optionsSummary, compareOptions } = await import("../shared/impactEngine");
+    const { weather, withHours, T0 } = await import("./fixtures/weather");
+    const w = weather(withHours(3, 4, { gustMph: 60 }));
+    const s = optionsSummary(compareOptions(w, "driving", 1, T0));
+    expect(s).toMatch(/^Lowest of these: A, leave now and C, leave in 6 hours \(Low\)\. Highest: B, leave in 3 hours \(High\)\.$/);
+    expect(s).not.toMatch(/safe/i);
+    const calm = optionsSummary(compareOptions(weather(), "driving", 1, T0));
+    expect(calm).toMatch(/^All options rate Low/);
+  });
+});

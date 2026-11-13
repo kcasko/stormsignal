@@ -24,7 +24,7 @@ export function ForecastDial({ weather, assessment, options, selected }: {
   return (
     <figure className="forecast-dial">
       <figcaption className="dial-caption">
-        <span className="eyebrow">Your next 12 hours</span>
+        <span className="eyebrow">Next 12 hours of weather</span>
         <span>{day(model.start, zone)} · {zoneName(model.start, zone)}</span>
       </figcaption>
       <svg viewBox="-12 -12 544 544" role="img" aria-label={`Twelve-hour forecast timeline. ${stamp(model.start, zone)} to ${stamp(model.end, zone)}. ${model.hours.map((h) => `${clock(h.start, zone)}: ${levelName(h.level)}`).join("; ")}. ${model.markers.map((o) => `Option ${o.key}: ${o.label}, ${clock(o.start, zone)}`).join(". ")}`}>
@@ -56,7 +56,7 @@ export function ForecastDial({ weather, assessment, options, selected }: {
         <text x="260" y="298" textAnchor="middle" className="dial-center-time">{model.peak ? `${clock(model.peak.start, zone)}–${clock(model.peak.end, zone)}` : "Check official NWS alerts"}</text>
         <text x="260" y="324" textAnchor="middle" className="dial-center-caption">{model.peak ? "APPROXIMATE FORECAST WINDOW" : "NOT AN ALL-CLEAR"}</text>
       </svg>
-      <div className="dial-legend"><span><i className="dial-key" />Hourly Storm Signal level</span><span><i className="duration-key" />Selected activity duration</span></div>
+      <div className="dial-legend"><span><i className="dial-key" />Ring colour: forecast risk each hour</span><span>A B C: your start times</span><span><i className="duration-key" />How long your plan runs</span></div>
       <p className="fine">{stamp(model.start, zone)} → {stamp(model.end, zone)}.</p>
       {model.outside.map((o) => <p className="fine" key={o.key}>Option {o.key} starts {stamp(o.start, zone)}, outside this 12-hour dial.</p>)}
       {selectedOption && selectedOption.start < model.end && selectedOption.end > model.end && <p className="fine">Option {selectedOption.key} continues beyond the dial to {stamp(selectedOption.end, zone)}.</p>}

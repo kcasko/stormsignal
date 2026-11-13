@@ -28,7 +28,7 @@ A forecast of "40% thunderstorms, gusts to 45 mph" is accurate and still hard to
 Storm Signal turns live National Weather Service data for **any U.S. place** (ZIP, city, street address or "use my location") into three connected answers:
 
 1. **Overview: what's coming and why it matters.** A Storm Signal level (Low → Critical) for the next 24 hours. Every level comes with its evidence: *"Elevated because of wind gusts: forecast peak 48 mph (Elevated at ≥46 mph), Fri 2 PM – 7 PM."* Official NWS alerts appear separately with NWS's own severity and full instruction text. They are never blended into a made-up score. Below the level, Storm Signal says **what would change it**: *"Would be Moderate if wind gusts stayed below 46 mph (forecast: 48 mph)."* Each official alert gets an **area map** (NWS's storm-based polygon or its zone outlines, with "your location is inside") and a **timeline**: issued, updated, extended, scheduled end. Alerts that already ended stay visible for a day, marked *expired*, *cancelled*, *upgraded* or *ended early*, because "the warning is gone" and "the warning expired on schedule" mean different things. And a **forecast-drift panel** shows how the NWS forecast for the same hours has changed over the last day ("Trending worse: peak gust 33 → 60 mph"). A forecast that keeps moving is less certain, and most apps never show that.
-2. **What If?: compare decisions.** Pick driving, an outdoor event, or home prep. Storm Signal compares *now*, *in 3 hours*, *in 6 hours* and **your own time** ("leave at 5:40 PM") using activity-specific thresholds, then explains in plain sentences what changes between options. It never calls a time "safe". **Share this view** sends the exact comparison to family as a link.
+2. **When to go: compare decisions.** Pick driving, an outdoor event, or home prep. Storm Signal compares *now*, *in 3 hours*, *in 6 hours* and **your own time** ("leave at 5:40 PM") using activity-specific thresholds, then answers first in one line (*"Lowest of these: A, leave now (Elevated). Highest: B, leave in 3 hours (High)."*) and explains in plain sentences what changes between options. A twelve-hour dial shows when the risk peaks and where each start time falls. It never calls a time "safe". **Share this view** sends the exact comparison to family as a link.
 3. **Storm Prep: act before it hits.** A checklist generated from the hazards actually in the forecast and the areas you care about (home, vehicle, household, electronics). Each task has a reason, a deadline from the forecast ("before about 5 PM, when gusts first reach 30 mph"), and an NWS or Ready.gov source. It's organized Before / During / After, and progress is saved in your browser. One click adds the deadlines to any calendar app as reminders (.ics, no account). The plan prints cleanly and **still opens offline**, because during an outage is exactly when you need it.
 
 **Built to be honest:**
@@ -38,7 +38,7 @@ Storm Signal turns live National Weather Service data for **any U.S. place** (ZI
 - Simulated scenarios exist so judges can see rare, dangerous cases. They're permanently labelled and never replace failed live data.
 
 ![Overview with live NWS data](screenshots/01-overview-live.png)
-![What If? comparison (simulated storm, labelled)](screenshots/03-whatif-sim-thunderstorm-driving.png)
+![When to go comparison (simulated storm, labelled)](screenshots/03-whatif-sim-thunderstorm-driving.png)
 ![Storm Prep checklist (simulated winter storm, labelled)](screenshots/04-prep-sim-winter.png)
 ![Forecast drift (simulated history, labelled)](screenshots/08-drift-sim-thunderstorm.png)
 
@@ -55,7 +55,7 @@ Storm Signal turns live National Weather Service data for **any U.S. place** (ZI
 - **Reliability:** 74 unit/integration tests on the rules, NWS client, geocoding, history, alert lifecycle, alert areas and calendar export, plus 40 Playwright browser tests on desktop and mobile. These include automated accessibility checks (WCAG AA) and an offline reload test against the production build.
 - **AWS SAM** defines everything. I deploy with one `sam deploy` and an `s3 sync`: no servers, no pipeline.
 
-The same TypeScript rule engine runs in Lambda for the overview and in the browser for the interactive What If?, so results are identical and comparisons respond instantly. Every threshold is published as JSON at `/api/rules`.
+The same TypeScript rule engine runs in Lambda for the overview and in the browser for the interactive When to go page, so results are identical and comparisons respond instantly. Every threshold is published as JSON at `/api/rules`.
 
 ### Reuse the pattern
 

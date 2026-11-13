@@ -6,11 +6,11 @@
 
 **Live:** https://d3p9tcn7282g7r.cloudfront.net
 
-A serverless weather decision-support app. It turns live National Weather Service forecasts and alerts into an explained risk level, a What If? comparison of plans, and a hazard-specific preparation checklist. Built for the AWS Builder Center Weekend Challenge "No Pipeline, No Problem" (Nov 13–16, 2026).
+A serverless weather decision-support app. It turns live National Weather Service forecasts and alerts into an explained risk level, a When to go comparison of plans, and a hazard-specific preparation checklist. Built for the AWS Builder Center Weekend Challenge "No Pipeline, No Problem" (Nov 13–16, 2026).
 
 - **Overview:** Storm Signal level (Low → Critical, or Unknown) for the next 24 h, with the evidence behind it and **what would change it**; official NWS alerts shown separately; current observation; hourly table.
 - **How the forecast has changed:** a scheduled Lambda saves each new NWS forecast to DynamoDB, so the app can show whether the forecast for the same hours is trending worse, better, steady or shifting.
-- **What If?:** driving, outdoor event, or home prep, compared for now / +3 h / +6 h and **your own start time**, with activity-specific rules and plain-language differences.
+- **When to go:** driving, outdoor event, or home prep, compared for now / +3 h / +6 h and **your own start time**, with activity-specific rules and plain-language differences.
 - **Storm Prep:** tasks chosen by hazard and by what you care about, each with a reason, timing and source; Before / During / After; **calendar reminders (.ics)**, print layout, and **works offline**.
 - **Any U.S. place:** ZIP, "City, ST", street address or "use my location" (rounded to about 1 km). **Share this view** links restore the place, scenario and plan.
 - **Open rules:** every threshold is published at `/api/rules`.

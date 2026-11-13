@@ -23,6 +23,8 @@ interface Props {
   now: number;
   history: HistoryState;
   simulated: boolean;
+  /** Switches to the labelled thunderstorm scenario, for first visits on quiet days. */
+  onTryStorm?: () => void;
 }
 
 const gustRule = OVERVIEW_RULES.find((r) => r.id === "gust")!;
@@ -43,6 +45,7 @@ export function Overview({
   now,
   history,
   simulated,
+  onTryStorm,
 }: Props) {
   const zone = weather?.location.timeZone ?? "America/Detroit";
   const next = weather
@@ -61,6 +64,17 @@ export function Overview({
       <h1 className="sr" tabIndex={-1}>
         Weather overview{weather ? " for " + weather.location.name : ""}
       </h1>
+      <section className="purpose" aria-label="What Storm Signal does">
+        <p className="purpose-line">
+          Storm Signal turns National Weather Service forecasts into decisions: how risky the next 24 hours are,{" "}
+          <a href="#whatif">when it’s safer to go</a>, and <a href="#prep">what to do before it hits</a>.
+        </p>
+        {!simulated && assessment?.level === "low" && onTryStorm && (
+          <button type="button" className="try-storm" onClick={onTryStorm}>
+            Quiet weather here. See it during a storm →
+          </button>
+        )}
+      </section>
       <div className={`hero tone-${assessment?.level ?? "unknown"}`}>
         <section className="verdict" aria-labelledby="verdict-h">
           <p className="eyebrow" id="verdict-h">
@@ -70,6 +84,9 @@ export function Overview({
           {assessment ? (
             <>
               <LevelScale level={assessment.level} />
+              <p className="scale-caption">
+                Storm Signal’s own 5-step rating of the next 24 hours, from NWS data. Official warnings always come first.
+              </p>
               <p className="verdict-summary">
                 {assessment.level === "low"
                   ? "No Storm Signal hazard threshold is met in the next 24 hours. Conditions can change; this is not an all-clear."
@@ -287,23 +304,6 @@ export function Overview({
         </p>
       </details>
       </div>
-      <section className="product-intro" aria-labelledby="intro-h">
-        <div>
-          <h2 id="intro-h">Weather you can plan around.</h2>
-        </div>
-        <div className="intro-copy">
-          <p>See approaching weather, compare when to go, and build a preparation checklist from National Weather Service forecasts.</p>
-          <details className="intro-guide">
-            <summary>How to use Storm Signal</summary>
-            <ol>
-              <li><strong>Overview:</strong> Choose your location to see approaching hazards, official alerts, and what has changed in the forecast.</li>
-              <li><a href="#whatif">What If?</a> Compare a drive, outdoor event, or home preparation at different times. Each option explains its weather exposure.</li>
-              <li><a href="#prep">Storm Prep:</a> Pick your priorities and work through a sourced checklist for before, during, and after hazardous weather.</li>
-            </ol>
-            <p className="fine">Storm Signal’s levels are its own assessment. Official NWS warnings and their instructions take priority.</p>
-          </details>
-        </div>
-      </section>
 
       <section className="method" id="method" aria-labelledby="method-h">
         <h2 id="method-h" className="section-h">

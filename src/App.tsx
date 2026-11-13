@@ -18,7 +18,7 @@ import { stamp, zoneName } from "./format";
 
 const PAGES = [
   { id: "overview", label: "Overview" },
-  { id: "whatif", label: "What If?" },
+  { id: "whatif", label: "When to go" },
   { id: "prep", label: "Storm Prep" },
 ] as const;
 type Page = (typeof PAGES)[number]["id"];
@@ -265,7 +265,7 @@ export function App() {
 
       <main id="main" tabIndex={-1}>
         {page === "overview" && (
-          <Overview weather={weather} assessment={assessment} loading={loading} now={now} history={history} simulated={simulated} />
+          <Overview weather={weather} assessment={assessment} loading={loading} now={now} history={history} simulated={simulated} onTryStorm={() => { setMode("thunderstorm"); window.scrollTo(0, 0); }} />
         )}
         {page === "whatif" && (
           <WhatIf

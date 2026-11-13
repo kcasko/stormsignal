@@ -27,7 +27,7 @@ npm run e2e        # starts or reuses Vite on 127.0.0.1:5173; /api is mocked, so
 `e2e/app.spec.ts` and `e2e/offline.spec.ts` run on desktop Chrome and a Pixel 7 profile, plus dark-mode axe checks (40 passing):
 - Live Overview shows the level, the evidence sentence, and alert status. An API 503 shows "Data unavailable", never Low.
 - Simulated scenarios are always bannered. A tornado warning shows the override, and the comparison and routine tasks are paused (collapsed, full contrast).
-- What If? shows three options with labels and a differences sentence; switching activity changes the options.
+- When to go shows three options with labels and a differences sentence; switching activity changes the options.
 - The checklist persists across reload, and Reset works.
 - In-page anchors (skip link, "How levels work") don't trigger the page router.
 - No horizontal overflow on any page.
@@ -57,10 +57,10 @@ The bundled Lambda (`build/handler.mjs`) was invoked directly. It returned 200 w
 
 ## Browser checks (manual, November 12, local dev server)
 
-- Live Kalamazoo: Overview, What If?, and Storm Prep render real NWS data, the observation (KAZO), and retrieval and issue times.
+- Live Kalamazoo: Overview, When to go, and Storm Prep render real NWS data, the observation (KAZO), and retrieval and issue times.
 - All five sources (live + four simulated scenarios) × three pages render with **zero console errors** after a clean reload.
-- Thunderstorm scenario: High from 60 mph gusts; official watch/advisory labelled separately; What If? rates A Elevated, B High, C Elevated with explained differences.
-- Tornado scenario: purple protective-action banner with NWS instruction text on every page; What If? dimmed; Storm Prep puts During first and dims routine tasks.
+- Thunderstorm scenario: High from 60 mph gusts; official watch/advisory labelled separately; When to go rates A Elevated, B High, C Elevated with explained differences.
+- Tornado scenario: purple protective-action banner with NWS instruction text on every page; When to go dimmed; Storm Prep puts During first and dims routine tasks.
 - Data-failure scenario and an injected HTTP 503: Unknown / "Data unavailable", never Low; alert status "unknown"; Storm Prep still offers baseline steps.
 - Checklist: checking a task persists across reload (`localStorage`); Reset clears it.
 - Layout: no horizontal overflow at 375 px; bottom navigation on mobile; light and dark schemes both checked.

@@ -202,7 +202,18 @@ test("calendar export is off for simulated data and available for live deadlines
   expect(download.suggestedFilename()).toBe("storm-signal-prep.ics");
 });
 
-test("overview is an answer page; the dial lives on What If?", async ({ page }) => {
+test("quiet days offer the labelled storm demo; When to go answers first", async ({ page }) => {
+  await mockApi(page);
+  await page.goto("/#overview");
+  await expect(page.locator(".purpose-line")).toContainText("turns National Weather Service forecasts into decisions");
+  await page.getByRole("button", { name: /See it during a storm/ }).click();
+  await expect(page.locator(".src select")).toHaveValue("thunderstorm");
+  await expect(page.locator(".banner-sim")).toBeVisible();
+  await page.getByRole("link", { name: "When to go" }).first().click();
+  await expect(page.locator(".options-summary")).toContainText("Highest: B, leave in 3 hours (High)");
+});
+
+test("overview is an answer page; the dial lives on When to go", async ({ page }) => {
   await mockApi(page);
   await page.goto("/#overview?src=thunderstorm");
   await expect(page.getByRole("img", { name: /Storm Signal level by hour: .*High 5PM to 7PM/ })).toBeVisible();

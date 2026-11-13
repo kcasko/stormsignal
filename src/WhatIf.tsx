@@ -7,6 +7,7 @@ import {
   compareOptions,
   explainDifferences,
   type Activity,
+  optionsSummary,
 } from "../shared/impactEngine";
 import {
   FactorList,
@@ -79,10 +80,10 @@ export function WhatIf({
   return (
     <div className={`page whatif${embedded ? " embedded" : ""}`}>
       <header className="page-head">
-        {embedded ? <h2>Compare your plans</h2> : <h1 tabIndex={-1}>What if?</h1>}
+        {embedded ? <h2>Compare your plans</h2> : <h1 tabIndex={-1}>When to go</h1>}
         {!embedded && <p className="lede">
-          Same forecast, different choices. Compare what the forecast shows for
-          three start times, or add your own.
+          Pick what you’re planning. Storm Signal checks the forecast for starting now, in 3 hours, in 6 hours or at
+          a time you choose, rates the weather risk of each, and explains what’s different.
         </p>}
       </header>
 
@@ -95,7 +96,7 @@ export function WhatIf({
           {(Object.keys(ACTIVITIES) as Activity[]).map((a) => <option key={a} value={a}>{ACTIVITIES[a].label}</option>)}
         </select></label> : (
         <fieldset className="segmented">
-          <legend>Activity</legend>
+          <legend><b className="step">1</b> What are you planning?</legend>
           {(Object.keys(ACTIVITIES) as Activity[]).map((a) => (
             <label key={a} className={a === activity ? "on" : ""}>
               <input
@@ -115,7 +116,7 @@ export function WhatIf({
         )}
         <AdvancedControls compact={embedded}>
         <label className="duration">
-          <span>Duration</span>
+          <span><b className="step">2</b> How long?</span>
           <select
             value={hours}
             onChange={(e) => setHours(Number(e.target.value))}
@@ -128,7 +129,7 @@ export function WhatIf({
           </select>
         </label>
         <div className="yourtime" role="group" aria-labelledby="yourtime-l">
-          <span id="yourtime-l">Your own start time (D)</span>
+          <span id="yourtime-l"><b className="step">3</b> Your own time (optional, shown as D)</span>
           <div>
             <select
               aria-label="Start hour"
@@ -213,7 +214,7 @@ export function WhatIf({
                   <p className="exposure-label">
                     {o.level === "unknown"
                       ? "Exposure can't be rated"
-                      : "Exposure on forecast evidence"}
+                      : "Weather risk for this plan"}
                   </p>
                   {embedded && <p className="selection-summary">{o.factors[0]?.evidence ?? (o.level === "low" ? "No activity-specific threshold is met in this window. This does not establish safety." : o.limitations[0] ?? "Data is incomplete for this window.")}</p>}
                   <OptionExplanation compact={embedded}>
@@ -277,8 +278,9 @@ export function WhatIf({
           <ComparisonDetails compact={embedded}>
           <section className="diffs" aria-labelledby="diffs-h">
             <h2 id="diffs-h" className="section-h">
-              What changes between options
+              How the options compare
             </h2>
+            <p className="options-summary">{optionsSummary(options)}</p>
             <ul>
               {diffs.map((d) => (
                 <li key={d}>{d}</li>

@@ -935,3 +935,18 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 @media (min-width: 961px) {
   .whatif:not(.embedded) .decision-workspace { grid-template-rows: auto auto 1fr; }
 }
+
+/* ---------- First-visit clarity: purpose line, storm demo button, level caption ---------- */
+.overview { grid-template-areas: "purpose purpose" "hero hero" "main context" "main ." "method method"; grid-template-rows: auto auto auto 1fr; }
+@media (max-width: 960px) {
+  .overview { grid-template-areas: "purpose" "hero" "context" "main" "method"; grid-template-rows: none; }
+}
+.purpose { grid-area: purpose; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; }
+.purpose-line { font: 400 clamp(17px, 1.6vw, 20px)/1.45 var(--serif); max-width: 70ch; }
+.purpose-line a { color: var(--accent); text-decoration-thickness: 1px; }
+.try-storm { background: transparent; border: 1px dashed var(--sim); color: var(--sim); font-weight: 600; white-space: nowrap; }
+.try-storm:hover:not(:disabled) { background: var(--sim); color: #fff; border-style: solid; }
+.scale-caption { font-size: 12.5px; color: var(--muted); margin-top: -4px; }
+/* When to go: numbered steps and the one-sentence answer. */
+.step { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 6px; border-radius: 50%; background: var(--accent); color: var(--paper); font: 700 11px/1 var(--sans); letter-spacing: 0; vertical-align: 1px; }
+.options-summary { font: 600 clamp(18px, 1.7vw, 21px)/1.4 var(--serif); margin: 0 0 12px; max-width: 60ch; }

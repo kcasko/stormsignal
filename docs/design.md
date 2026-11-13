@@ -1,6 +1,6 @@
 # Storm Signal — interface design
 
-Rebuilt November 12, 2026 to the three-experience structure (Overview / What If? / Storm Prep). The earlier storm-window dial prototype is superseded; its rules about honest timing, explicit dates, and demo isolation carry over.
+Rebuilt November 12, 2026 to the three-experience structure (Overview / When to go / Storm Prep). The earlier storm-window dial prototype is superseded; its rules about honest timing, explicit dates, and demo isolation carry over.
 
 ## Information hierarchy
 
@@ -16,7 +16,7 @@ Rebuilt November 12, 2026 to the three-experience structure (Overview / What If?
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ STORM SIGNAL   Overview  What If?  Storm Prep        [Kalamazoo, MI ▾]    │
+│ STORM SIGNAL   Overview  When to go  Storm Prep        [Kalamazoo, MI ▾]    │
 │                                          LIVE NWS · retrieved 9:41 PM [↻] │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ ▌SIMULATED SCENARIO — not a real forecast            (only in demo mode)  │
@@ -53,11 +53,11 @@ Rebuilt November 12, 2026 to the three-experience structure (Overview / What If?
 │ Why this level (list)    │
 │ Hourly (h-scroll box)    │
 ├──────────────────────────┤
-│ Overview│What If?│Prep   │  ← fixed bottom nav, 56 px
+│ Overview│When to go│Prep   │  ← fixed bottom nav, 56 px
 └──────────────────────────┘
 ```
 
-### What If?
+### When to go
 
 ```
 ACTIVITY  [Driving] [Outdoor event] [Home prep]      DURATION [1 h ▾]
@@ -87,8 +87,8 @@ BEFORE (3 of 7 done ▬▬▬▭▭)  │ DURING              │ AFTER
 
 - **Location change** → aborts the in-flight request, clears old data (no stale city shown under a new name), loads.
 - **Source switch** (Live ↔ labelled scenario) → scenario data never replaces failed live data; the simulated banner is permanent while a scenario is selected.
-- **Overview → What If?** → "Compare my plans" carries the current weather; activity defaults to Driving.
-- **What If? → Storm Prep** → hazards from the same assessment drive the checklist.
+- **Overview → When to go** → "Compare my plans" carries the current weather; activity defaults to Driving.
+- **When to go → Storm Prep** → hazards from the same assessment drive the checklist.
 - Checkbox state persists in `localStorage` per task id; Reset clears it.
 
 ## Tokens
@@ -126,4 +126,4 @@ The working local alternative restores a 12-hour storm-window dial beside the li
 
 **Overview is an answer page.** One navy hero band (the dial's palette) holds the answer: the Storm Signal level as a large word on the labelled five-step scale, the one-sentence reason and an expandable "why / what would change it" on the left; current conditions and the four numbers that drive most decisions in the next 24 hours (peak gust and when, thunder chance, snow/ice totals, active official alerts) on the right. The hero redefines the colour tokens locally, so everything inside stays WCAG AA. Below it: the hour-by-hour ribbon, two calls to action (compare when to go, build a prep checklist), how the forecast has changed, and the hourly table, in the left column; official alerts with maps, timelines and ended alerts, then a short product intro, in the right column. Phones: hero, alerts, then the rest.
 
-**What If? owns the dial.** The twelve-hour dial sits beside the activity/time controls and the plain-language "what changes between options"; the option cards run full width below it, three or four across.
+**When to go owns the dial.** The twelve-hour dial sits beside the activity/time controls and the plain-language "what changes between options"; the option cards run full width below it, three or four across.

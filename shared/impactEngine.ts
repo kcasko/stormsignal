@@ -2,6 +2,7 @@
 // It compares forecast evidence between time windows; it never declares a time "safe",
 // estimates accident probability, or infers road conditions that were not retrieved.
 import type { Alert, Classification, Factor, Hazard, Level, Weather } from "./types";
+import { LEVELS } from "./types";
 import {
   HOUR,
   Rule,
@@ -624,4 +625,25 @@ export function explainDifferences(options: OptionResult[], zone: string): strin
       );
   }
   return out;
+}
+
+/**
+ * One plain sentence that answers "so which is better?" first. Ranks options by their
+ * Storm Signal level only; never calls any option safe.
+ */
+export function optionsSummary(options: OptionResult[]): string {
+  const rated = options.filter((o) => o.level !== "unknown");
+  const name = (o: OptionResult) => `${o.key}, ${o.label.charAt(0).toLowerCase()}${o.label.slice(1)}`;
+  const list = (os: OptionResult[]) =>
+    os.length === 1 ? name(os[0]) : `${os.slice(0, -1).map(name).join("; ")} and ${name(os[os.length - 1])}`;
+  if (!rated.length) return "The forecast data isn't complete enough to rate these options. Check weather.gov.";
+  const ranks = rated.map((o) => LEVELS.indexOf(o.level as (typeof LEVELS)[number]));
+  const lo = Math.min(...ranks),
+    hi = Math.max(...ranks);
+  const at = (r: number) => rated.filter((o) => LEVELS.indexOf(o.level as (typeof LEVELS)[number]) === r);
+  const unrated = options.length - rated.length;
+  const tail = unrated ? ` ${unrated === 1 ? "One option" : `${unrated} options`} couldn't be rated.` : "";
+  if (lo === hi)
+    return `All ${rated.length === options.length ? "options" : "rated options"} rate ${levelName(LEVELS[lo])}, so timing doesn't change the forecast risk much here.${tail}`;
+  return `Lowest of these: ${list(at(lo))} (${levelName(LEVELS[lo])}). Highest: ${list(at(hi))} (${levelName(LEVELS[hi])}).${tail}`;
 }

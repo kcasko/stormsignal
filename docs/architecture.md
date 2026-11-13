@@ -56,12 +56,12 @@ Not used, on purpose: Step Functions, SQS, Bedrock/any LLM, Cognito, a map/radar
 | `backend/local.ts` | Same handler on `127.0.0.1:8787` for local development. |
 | `shared/rules.ts` | Rule machinery shared by both engines: thresholds, windows, alert mapping, limitations. |
 | `shared/riskEngine.ts` | Overview level for the next 24 h. |
-| `shared/impactEngine.ts` | What If?: activity rules, three-option comparison, plain-language differences. |
+| `shared/impactEngine.ts` | When to go: activity rules, three-option comparison, plain-language differences. |
 | `shared/preparationEngine.ts` | Storm Prep task library, hazard/category filtering, timing, Before/During/After. |
 | `shared/locations.ts` | Nine validated city-center points. |
-| `src/` | React UI (Overview, What If?, Storm Prep), place search, share links (`share.ts`), calendar export (`ics.ts`), labelled simulated scenarios and history. `public/sw.js` keeps the app and last data available offline. |
+| `src/` | React UI (Overview, When to go, Storm Prep), place search, share links (`share.ts`), calendar export (`ics.ts`), labelled simulated scenarios and history. `public/sw.js` keeps the app and last data available offline. |
 
-The engines live in `shared/` so the Lambda (overview assessment) and the browser (interactive What If?, simulated scenarios) run exactly the same deterministic code.
+The engines live in `shared/` so the Lambda (overview assessment) and the browser (interactive When to go, simulated scenarios) run exactly the same deterministic code.
 
 ## NWS data used
 
@@ -79,7 +79,7 @@ A layer with an unexpected unit is dropped and becomes *unknown*, never zero. Ea
 
 Levels: Low < Moderate < Elevated < High < Critical, plus **Unknown**. The highest triggered rule sets the level. Any missing source (forecast, gridpoint data or alerts) or incomplete time coverage makes Low impossible: with no other triggered rule, the result is Unknown.
 
-**Official alerts** (Storm Signal floor; NWS severity is always shown alongside, unchanged): advisory/statement → Moderate; watch → Elevated; warning → High; tornado warning/emergency, flash flood emergency, extreme wind, hurricane, storm surge, tsunami, or any warning with NWS severity *Extreme* → Critical. Warnings that call for immediate action (tornado, severe thunderstorm, flash flood, extreme wind, snow squall, dust storm, storm surge, hurricane, tsunami, or urgency *Immediate*) override What If? and Storm Prep.
+**Official alerts** (Storm Signal floor; NWS severity is always shown alongside, unchanged): advisory/statement → Moderate; watch → Elevated; warning → High; tornado warning/emergency, flash flood emergency, extreme wind, hurricane, storm surge, tsunami, or any warning with NWS severity *Extreme* → Critical. Warnings that call for immediate action (tornado, severe thunderstorm, flash flood, extreme wind, snow squall, dust storm, storm surge, hurricane, tsunami, or urgency *Immediate*) override When to go and Storm Prep.
 
 **Overview thresholds (next 24 h):**
 
@@ -95,7 +95,7 @@ Levels: Low < Moderate < Elevated < High < Critical, plus **Unknown**. The highe
 
 Forecast wording (e.g. "Thunderstorms", "Freezing Rain", "Blizzard") is only used for hours where the matching numeric layer is missing, so a known 0 in of snow beats "slight chance snow showers".
 
-**Activity thresholds (What If?)** differ by exposure. Examples: driving treats any ice as High and gusts ≥40 mph as Elevated (crosswinds); an outdoor event treats thunder chance ≥25% as Elevated and ≥50% as High (no lightning shelter outdoors), and gusts ≥35 mph as Elevated (tents and canopies); home prep uses gusts ≥30 / 46 / 58 mph for securing objects. The full tables are in `shared/impactEngine.ts`.
+**Activity thresholds (When to go)** differ by exposure. Examples: driving treats any ice as High and gusts ≥40 mph as Elevated (crosswinds); an outdoor event treats thunder chance ≥25% as Elevated and ≥50% as High (no lightning shelter outdoors), and gusts ≥35 mph as Elevated (tents and canopies); home prep uses gusts ≥30 / 46 / 58 mph for securing objects. The full tables are in `shared/impactEngine.ts`.
 
 **Explicitly not done:** no accident or damage probabilities, no road-condition inference (none is retrieved), no "safe" verdicts, no generative AI.
 
