@@ -15,7 +15,7 @@
 
 ## Storm Signal: one storm, different decisions
 
-**Live app:** https://d3p9tcn7282g7r.cloudfront.net · **Demo (2:45):** [YouTube/Vimeo URL] · **Code:** https://github.com/kcasko/stormsignal (MIT)
+**Live app:** https://d3p9tcn7282g7r.cloudfront.net · **Demo:** [ADD PUBLIC VIDEO URL BEFORE PUBLISHING] · **Code:** https://github.com/kcasko/stormsignal (MIT)
 
 ### The problem
 
@@ -37,6 +37,7 @@ Storm Signal turns live National Weather Service data for **any U.S. place** (ZI
 - There are no accident probabilities and no invented road conditions. No AI writes safety advice: every classification comes from documented, unit-tested rules.
 - Simulated scenarios exist so judges can see rare, dangerous cases. They're permanently labelled and never replace failed live data.
 
+<!-- Builder Center publishing note: upload each image below into the article editor and replace relative screenshot paths with hosted images before publishing. -->
 ![Overview with live NWS data](screenshots/01-overview-live.png)
 ![When to go comparison (simulated storm, labelled)](screenshots/03-whatif-sim-thunderstorm-driving.png)
 ![Storm Prep checklist (simulated winter storm, labelled)](screenshots/04-prep-sim-winter.png)
@@ -52,7 +53,7 @@ Storm Signal turns live National Weather Service data for **any U.S. place** (ZI
 - **Amazon EventBridge Scheduler** invokes a second **Lambda** every 30 minutes. It saves each *new* NWS forecast issuance, and every change to the active alerts, for the listed cities to **Amazon DynamoDB** (on-demand, 72-hour TTL). The weather Lambda queries that history so the browser can compare the same forecast hours across issuances. Each Lambda has its own least-privilege role (Put vs. Query).
 - **Any U.S. place** without a third-party service: ZIPs and city names resolve from public-domain U.S. Census Gazetteer data bundled in the Lambda, and only full street addresses go to the U.S. Census Geocoder. "Use my location" is rounded to about 1 km in the browser, and searches are never logged.
 - **Amazon CloudWatch** receives one structured JSON log line per request (latency, which sources succeeded, resulting level), plus an error alarm. An AWS Budget alert guards cost.
-- **Reliability:** 74 unit/integration tests on the rules, NWS client, geocoding, history, alert lifecycle, alert areas and calendar export, plus 40 Playwright browser tests on desktop and mobile. These include automated accessibility checks (WCAG AA) and an offline reload test against the production build.
+- **Reliability:** 84 unit/integration tests on the rules, NWS client, geocoding, history, alert lifecycle, alert areas and calendar export, plus 46 Playwright browser tests on desktop and mobile. These include automated accessibility checks (WCAG AA) and an offline reload test against the production build.
 - **AWS SAM** defines everything. I deploy with one `sam deploy` and an `s3 sync`: no servers, no pipeline.
 
 The same TypeScript rule engine runs in Lambda for the overview and in the browser for the interactive When to go page, so results are identical and comparisons respond instantly. Every threshold is published as JSON at `/api/rules`.
