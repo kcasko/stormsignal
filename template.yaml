@@ -1,7 +1,33 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: StormSignal read-only weather API. Backend-only local milestone; not deployed.
+Description: >-
+  Storm Signal: serverless weather decision support. Private S3 + CloudFront for the
+  static frontend, CloudFront /api/* -> API Gateway HTTP API -> Lambda (read-only NWS
+  retrieval and rule engine). No servers, no pipeline. Deployed manually with SAM.
+
+Parameters:
+  NwsUserAgent:
+    Type: String
+    Description: User-Agent sent to api.weather.gov (NWS asks for an app name and a contact, e.g. a URL or email).
+    MinLength: 10
+  BudgetEmail:
+    Type: String
+    Default: ""
+    Description: Optional. Email for a monthly cost budget alert. Leave blank to skip the budget.
+  MonthlyBudgetUsd:
+    Type: Number
+    Default: 5
+
+Conditions:
+  HasBudget: !Not [!Equals [!Ref BudgetEmail, ""]]
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Architectures: [arm64]
+
 Resources:
+  # ---------- API ----------
   WeatherLog:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -29,37 +55,148 @@ Resources:
     Properties:
       StageName: "$default"
       DefaultRouteSettings:
-        ThrottlingRateLimit: 2
-        ThrottlingBurstLimit: 4
+        ThrottlingRateLimit: 5
+        ThrottlingBurstLimit: 10
   WeatherFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${AWS::StackName}-weather"
-      Runtime: nodejs22.x
-      Architectures: [arm64]
       CodeUri: build/
       Handler: handler.handler
       MemorySize: 256
       Timeout: 20
-      ReservedConcurrentExecutions: 2
+      # Hard ceiling on parallel executions: bounds both cost and load on NWS.
+      ReservedConcurrentExecutions: 3
       Role: !GetAtt WeatherRole.Arn
       LoggingConfig:
         LogGroup: !Ref WeatherLog
+      Environment:
+        Variables:
+          NWS_USER_AGENT: !Ref NwsUserAgent
       Events:
         Weather:
           Type: HttpApi
-          Properties:
-            ApiId: !Ref WeatherApi
-            Path: /api/weather
-            Method: GET
-            PayloadFormatVersion: "2.0"
+          Properties: { ApiId: !Ref WeatherApi, Path: /api/weather, Method: GET, PayloadFormatVersion: "2.0" }
+        Locations:
+          Type: HttpApi
+          Properties: { ApiId: !Ref WeatherApi, Path: /api/locations, Method: GET, PayloadFormatVersion: "2.0" }
         Health:
           Type: HttpApi
-          Properties:
-            ApiId: !Ref WeatherApi
-            Path: /api/health
-            Method: GET
-            PayloadFormatVersion: "2.0"
+          Properties: { ApiId: !Ref WeatherApi, Path: /api/health, Method: GET, PayloadFormatVersion: "2.0" }
+  WeatherErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Storm Signal Lambda errors (unhandled). NWS outages are handled and do not count.
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions: [{ Name: FunctionName, Value: !Ref WeatherFunction }]
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  # ---------- Frontend ----------
+  SiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules: [{ ObjectOwnership: BucketOwnerEnforced }]
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+  SiteOac:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}-oac"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  SiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SiteBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: CloudFrontReadOnly
+            Effect: Allow
+            Principal: { Service: cloudfront.amazonaws.com }
+            Action: s3:GetObject
+            Resource: !Sub "${SiteBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource: [!GetAtt SiteBucket.Arn, !Sub "${SiteBucket.Arn}/*"]
+            Condition: { Bool: { aws:SecureTransport: "false" } }
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: Storm Signal
+        HttpVersion: http2and3
+        PriceClass: PriceClass_100
+        DefaultRootObject: index.html
+        Origins:
+          - Id: site
+            DomainName: !GetAtt SiteBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt SiteOac.Id
+            S3OriginConfig: { OriginAccessIdentity: "" }
+          - Id: api
+            DomainName: !Sub "${WeatherApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+            CustomOriginConfig: { OriginProtocolPolicy: https-only, OriginSSLProtocols: [TLSv1.2] }
+        DefaultCacheBehavior:
+          TargetOriginId: site
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          AllowedMethods: [GET, HEAD]
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # Managed-CachingOptimized
+          ResponseHeadersPolicyId: 67f7725c-6f97-4210-82d7-5512b31e9d03 # Managed-SecurityHeadersPolicy
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: api
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD]
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # Managed-CachingDisabled
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac # Managed-AllViewerExceptHostHeader
+            ResponseHeadersPolicyId: 67f7725c-6f97-4210-82d7-5512b31e9d03
+
+  # ---------- Cost guardrail (optional) ----------
+  CostBudget:
+    Type: AWS::Budgets::Budget
+    Condition: HasBudget
+    Properties:
+      Budget:
+        BudgetName: !Sub "${AWS::StackName}-monthly"
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit: { Amount: !Ref MonthlyBudgetUsd, Unit: USD }
+      NotificationsWithSubscribers:
+        - Notification: { NotificationType: ACTUAL, ComparisonOperator: GREATER_THAN, Threshold: 50, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref BudgetEmail }]
+        - Notification: { NotificationType: FORECASTED, ComparisonOperator: GREATER_THAN, Threshold: 100, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref BudgetEmail }]
+
 Outputs:
+  SiteUrl:
+    Description: Public HTTPS URL (CloudFront)
+    Value: !Sub "https://${Distribution.DomainName}"
   ApiUrl:
+    Description: Direct API endpoint (the site uses CloudFront /api/* instead)
     Value: !Sub "https://${WeatherApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
+  SiteBucketName:
+    Value: !Ref SiteBucket
+  DistributionId:
+    Value: !Ref Distribution

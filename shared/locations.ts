@@ -1,5 +1,5 @@
 import type { Location } from "./types";
-// City centers, not addresses. Initial release is explicitly limited to this catalog.
+// City centers, not addresses. The release is explicitly limited to this catalog.
 export const locations: Location[] = [
   {
     id: "kalamazoo",
@@ -42,5 +42,26 @@ export const locations: Location[] = [
     latitude: 42.4031,
     longitude: -86.2736,
     timeZone: "America/Detroit",
+  },
+  {
+    id: "detroit",
+    name: "Detroit, MI",
+    latitude: 42.3314,
+    longitude: -83.0458,
+    timeZone: "America/Detroit",
+  },
+  {
+    id: "chicago",
+    name: "Chicago, IL",
+    latitude: 41.8781,
+    longitude: -87.6298,
+    timeZone: "America/Chicago",
+  },
+  {
+    id: "indianapolis",
+    name: "Indianapolis, IN",
+    latitude: 39.7684,
+    longitude: -86.1581,
+    timeZone: "America/Indiana/Indianapolis",
   },
 ];
