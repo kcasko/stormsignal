@@ -1,5 +1,7 @@
-import { useMemo } from "react";
-import type { Weather } from "../shared/types";
+import { useMemo, useState, type ReactNode } from "react";
+import type { Weather, Assessment } from "../shared/types";
+import { assess } from "../shared/riskEngine";
+import { ForecastDial } from "./ForecastDial";
 import {
   ACTIVITIES,
   compareOptions,
@@ -16,7 +18,7 @@ import {
 import { HOUR } from "../shared/rules";
 import { clock, day, hourOnly, unknown } from "./format";
 
-interface Props {
+export interface WhatIfProps {
   weather: Weather | null;
   loading: boolean;
   now: number;
@@ -26,6 +28,8 @@ interface Props {
   setHours: (h: number) => void;
   custom: number | null;
   setCustom: (t: number | null) => void;
+  embedded?: boolean;
+  assessment?: Assessment | null;
 }
 
 const durationLabel = (h: number) =>
@@ -41,7 +45,10 @@ export function WhatIf({
   setHours,
   custom,
   setCustom,
-}: Props) {
+  embedded = false,
+  assessment,
+}: WhatIfProps) {
+  const [selected, setSelected] = useState("A");
   const zone = weather?.location.timeZone ?? "America/Detroit";
   const spec = ACTIVITIES[activity];
   const options = useMemo(
@@ -61,18 +68,32 @@ export function WhatIf({
     [options, zone],
   );
   const urgent = options[0]?.urgent;
+  const activeKey = options.some((o) => o.key === selected) ? selected : "A";
+  const shown = embedded ? options.filter((o) => o.key === activeKey) : options;
+  const dialAssessment = useMemo(() => {
+    const base = assessment ?? (weather ? assess(weather, now) : null);
+    // The dial and option A share one clock, even if the API assessment arrived a few seconds later.
+    return base ? { ...base, windowStart: now, windowEnd: now + 24 * HOUR } : null;
+  }, [assessment, weather, now]);
 
   return (
-    <div className="page whatif">
+    <div className={`page whatif${embedded ? " embedded" : ""}`}>
       <header className="page-head">
-        <h1 tabIndex={-1}>What if?</h1>
-        <p className="lede">
+        {embedded ? <h2>Compare your plans</h2> : <h1 tabIndex={-1}>What if?</h1>}
+        {!embedded && <p className="lede">
           Same forecast, different choices. Compare what the forecast shows for
-          three start times.
-        </p>
+          three start times, or add your own.
+        </p>}
       </header>
 
+      <div className="decision-workspace">
+      {weather && dialAssessment && <ForecastDial weather={weather} assessment={dialAssessment} options={options} selected={activeKey} />}
+      <div className="decision-panel">
+
       <div className="controls" role="group" aria-label="Plan">
+        {embedded ? <label className="simple-activity"><span>I’m planning to</span><select value={activity} onChange={(e) => { const a = e.target.value as Activity; setActivity(a); setHours(ACTIVITIES[a].defaultHours); }}>
+          {(Object.keys(ACTIVITIES) as Activity[]).map((a) => <option key={a} value={a}>{ACTIVITIES[a].label}</option>)}
+        </select></label> : (
         <fieldset className="segmented">
           <legend>Activity</legend>
           {(Object.keys(ACTIVITIES) as Activity[]).map((a) => (
@@ -91,6 +112,8 @@ export function WhatIf({
             </label>
           ))}
         </fieldset>
+        )}
+        <AdvancedControls compact={embedded}>
         <label className="duration">
           <span>Duration</span>
           <select
@@ -139,6 +162,7 @@ export function WhatIf({
             )}
           </div>
         </div>
+        </AdvancedControls>
       </div>
 
       {urgent && (
@@ -166,13 +190,17 @@ export function WhatIf({
             active={!!urgent}
             label="The comparison is paused during this warning. Show it anyway."
           >
+            {embedded && <div className="plan-starts" role="group" aria-label="Choose a start time to inspect">
+              {options.map((o) => <button key={o.key} type="button" className={o.key === activeKey ? "selected" : ""} aria-pressed={o.key === activeKey} onClick={() => setSelected(o.key)}>
+                <span className="plan-start-label"><b>{o.key}</b>{o.label}</span>
+                <LevelMark level={o.level} size="sm" />
+              </button>)}
+            </div>}
             <ol className="options" aria-label="Compared options">
-              {options.map((o) => (
+              {shown.map((o) => (
                 <li key={o.key} className={`option lv-${o.level}`}>
                   <div className="option-head">
-                    <span className="key" aria-hidden="true">
-                      {o.key}
-                    </span>
+                    {embedded ? <span className="key" aria-hidden="true">{o.key}</span> : <button type="button" className="key" aria-label={`Show option ${o.key} on dial`} aria-pressed={o.key === activeKey} onClick={() => setSelected(o.key)}>{o.key}</button>}
                     <div>
                       <h2>{o.label}</h2>
                       <p className="num when">
@@ -187,6 +215,8 @@ export function WhatIf({
                       ? "Exposure can't be rated"
                       : "Exposure on forecast evidence"}
                   </p>
+                  {embedded && <p className="selection-summary">{o.factors[0]?.evidence ?? (o.level === "low" ? "No activity-specific threshold is met in this window. This does not establish safety." : o.limitations[0] ?? "Data is incomplete for this window.")}</p>}
+                  <OptionExplanation compact={embedded}>
                   <WhatWouldChange level={o.level} factors={o.factors} />
                   <dl className="conds">
                     <div>
@@ -238,11 +268,13 @@ export function WhatIf({
                     </p>
                   ) : null}
                   <Limitations items={o.limitations} title="Unknowns" />
+                  </OptionExplanation>
                 </li>
               ))}
             </ol>
           </PausedDuringWarning>
 
+          <ComparisonDetails compact={embedded}>
           <section className="diffs" aria-labelledby="diffs-h">
             <h2 id="diffs-h" className="section-h">
               What changes between options
@@ -263,8 +295,24 @@ export function WhatIf({
               </li>
             </ul>
           </section>
+          </ComparisonDetails>
+          {embedded && <a className="prep-next" href="#prep">Next: build my preparation checklist →</a>}
         </>
       )}
+      </div>
+      </div>
     </div>
   );
+}
+
+function OptionExplanation({compact, children}: {compact: boolean; children: ReactNode}) {
+  return compact ? <details className="option-explanation"><summary>Forecast evidence and limitations</summary><div>{children}</div></details> : <>{children}</>;
+}
+
+function AdvancedControls({compact, children}: {compact: boolean; children: ReactNode}) {
+  return compact ? <details className="advanced-controls"><summary>Duration and custom time</summary><div>{children}</div></details> : <>{children}</>;
+}
+
+function ComparisonDetails({compact, children}: {compact: boolean; children: ReactNode}) {
+  return compact ? <details className="comparison-details"><summary>Why the options differ</summary>{children}</details> : <>{children}</>;
 }

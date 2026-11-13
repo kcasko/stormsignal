@@ -171,6 +171,7 @@ test("share link restores place, source, activity and your own time", async ({ p
 test("drift panel and what-would-change explain the scenario", async ({ page }) => {
   await mockApi(page);
   await page.goto("/#overview?src=thunderstorm");
+  await page.locator(".risk-details > summary").click();
   await expect(page.locator(".trend")).toContainText("Trending worse");
   await expect(page.locator(".drift-changes")).toContainText("33 mph → 60 mph");
   await expect(page.locator(".verdict .cf")).toContainText("Wind gusts stayed below 58 mph");
@@ -199,4 +200,17 @@ test("calendar export is off for simulated data and available for live deadlines
   await expect(button).toBeEnabled();
   const [download] = await Promise.all([page.waitForEvent("download"), button.click()]);
   expect(download.suggestedFilename()).toBe("storm-signal-prep.ics");
+});
+
+test("overview is an answer page; the dial lives on What If?", async ({ page }) => {
+  await mockApi(page);
+  await page.goto("/#overview?src=thunderstorm");
+  await expect(page.getByRole("img", { name: /Storm Signal level by hour: .*High 5PM to 7PM/ })).toBeVisible();
+  await expect(page.locator(".next-day")).toContainText("60 mph");
+  await expect(page.locator(".forecast-dial")).toHaveCount(0);
+  await page.getByRole("link", { name: "Compare when to go →" }).click();
+  await expect(page.getByRole("img", { name: /Twelve-hour forecast timeline/ })).toBeVisible();
+  await expect(page.locator(".option")).toHaveCount(3);
+  await page.getByRole("button", { name: "Show option C on dial" }).click();
+  await expect(page.locator(".dial-marker.selected text")).toHaveText("C");
 });

@@ -113,3 +113,17 @@ All level colours meet WCAG AA (≥4.5:1) for small text on every background in 
 Type: **Source Serif 4** for headlines and the level word (editorial voice), **Public Sans** for UI and body, **IBM Plex Mono** for numbers, times and station IDs. Fonts are bundled from npm (`@fontsource`), so no third-party font requests.
 
 Spacing: 4 px base; steps 4/8/12/16/24/32/48/64. Sections are separated by hairline rules, not cards or shadows. Corner radius 2 px on controls only. Motion: none besides focus/press feedback.
+
+## November 13 local palette refinement
+
+Cool slate page (#edf2f7), white panels, navy text (#172b43), muted slate (#52657b), blue action color (#2159a6). Dark equivalents: page #0c1726, panels #142337, text #edf3fa, muted #a8bbd1 and action #9bc6ff. Severity retains its established colors. A compact introduction explains the product above current conditions; a native disclosure contains the three-step usage guide.
+
+## Dial-led alternative — November 13
+
+The working local alternative restores a 12-hour storm-window dial beside the live planning controls. It derives hourly colors and peak-window text from the current assessment engine. The ring represents general weather; A/B/C/D options use activity-specific exposure rules. Full-day assessment is labelled separately below the planner. The selected activity duration uses a dashed outer track. Dates/time zones are explicit, late custom starts do not wrap, and the hourly text disclosure supplies a color-independent alternative. At phone widths controls precede the dial. Alert maps and history are preserved beneath the planning workspace.
+
+## Storm console — November 13 (final direction)
+
+**Overview is an answer page.** One navy hero band (the dial's palette) holds the answer: the Storm Signal level as a large word on the labelled five-step scale, the one-sentence reason and an expandable "why / what would change it" on the left; current conditions and the four numbers that drive most decisions in the next 24 hours (peak gust and when, thunder chance, snow/ice totals, active official alerts) on the right. The hero redefines the colour tokens locally, so everything inside stays WCAG AA. Below it: the hour-by-hour ribbon, two calls to action (compare when to go, build a prep checklist), how the forecast has changed, and the hourly table, in the left column; official alerts with maps, timelines and ended alerts, then a short product intro, in the right column. Phones: hero, alerts, then the rest.
+
+**What If? owns the dial.** The twelve-hour dial sits beside the activity/time controls and the plain-language "what changes between options"; the option cards run full width below it, three or four across.

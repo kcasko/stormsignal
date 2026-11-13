@@ -1,10 +1,16 @@
 import type { Assessment, Weather } from "../shared/types";
 import { HOUR } from "../shared/rules";
 import { OVERVIEW_RULES } from "../shared/riskEngine";
-import { AlertItem, FactorList, LevelScale, Limitations, WhatWouldChange } from "./components";
+import {
+  AlertItem,
+  FactorList,
+  LevelScale,
+  Limitations,
+  WhatWouldChange,
+} from "./components";
+import { DriftPanel } from "./Drift";
 import { hourlySignal, peakRun } from "../shared/ribbon";
 import { levelName } from "../shared/rules";
-import { DriftPanel } from "./Drift";
 import { EndedAlerts } from "./AlertArea";
 import { activeStory, endedStories } from "../shared/alertHistory";
 import type { HistoryState } from "./useHistory";
@@ -15,7 +21,6 @@ interface Props {
   assessment: Assessment | null;
   loading: boolean;
   now: number;
-  go: (page: string) => void;
   history: HistoryState;
   simulated: boolean;
 }
@@ -31,7 +36,14 @@ function cellLevel(id: string, v: number | null) {
   return hit ? `lv-${hit[0]} hot` : "";
 }
 
-export function Overview({ weather, assessment, loading, now, go, history, simulated }: Props) {
+export function Overview({
+  weather,
+  assessment,
+  loading,
+  now,
+  history,
+  simulated,
+}: Props) {
   const zone = weather?.location.timeZone ?? "America/Detroit";
   const next = weather
     ? weather.periods.filter(
@@ -49,141 +61,128 @@ export function Overview({ weather, assessment, loading, now, go, history, simul
       <h1 className="sr" tabIndex={-1}>
         Weather overview{weather ? " for " + weather.location.name : ""}
       </h1>
-      <section className={`verdict tone-${assessment?.level ?? "unknown"}`} aria-labelledby="verdict-h">
-        <p className="eyebrow" id="verdict-h">
-          Storm Signal level · next 24 hours
-        </p>
-        {assessment ? (
-          <>
-            <LevelScale level={assessment.level} />
-            <p className="verdict-summary">{assessment.summary}</p>
-            {weather && <SignalRibbon weather={weather} assessment={assessment} zone={zone} />}
-            <WhatWouldChange level={assessment.level} factors={assessment.factors} />
-            <p className="fine">
-              {stamp(assessment.windowStart, zone)} →{" "}
-              {stamp(assessment.windowEnd, zone)}. A Storm Signal level comes
-              from documented rules applied to NWS data. It is not an official
-              NWS rating. <a href="#method">How levels work</a>
+      <div className={`hero tone-${assessment?.level ?? "unknown"}`}>
+        <section className="verdict" aria-labelledby="verdict-h">
+          <p className="eyebrow" id="verdict-h">
+            Storm Signal level · next 24 hours
+          </p>
+          <h2 className="hero-place">{weather?.location.name ?? "Your weather"}</h2>
+          {assessment ? (
+            <>
+              <LevelScale level={assessment.level} />
+              <p className="verdict-summary">
+                {assessment.level === "low"
+                  ? "No Storm Signal hazard threshold is met in the next 24 hours. Conditions can change; this is not an all-clear."
+                  : assessment.summary}
+              </p>
+              <details className="risk-details">
+                <summary>Why this level and what could change it</summary>
+                <FactorList factors={assessment.factors} />
+                <Limitations items={assessment.limitations} title="What this assessment could not check" />
+                <WhatWouldChange level={assessment.level} factors={assessment.factors} />
+              </details>
+              <p className="fine">
+                {stamp(assessment.windowStart, zone)} → {stamp(assessment.windowEnd, zone)}. Storm Signal’s own
+                classification. <a href="#method">How levels work</a>
+              </p>
+            </>
+          ) : (
+            <p className="verdict-summary">
+              {loading ? "Retrieving National Weather Service data…" : "No assessment: weather data could not be retrieved."}
             </p>
-          </>
-        ) : (
-          <p className="verdict-summary">
-            {loading
-              ? "Retrieving National Weather Service data…"
-              : "No assessment: weather data could not be retrieved."}
-          </p>
-        )}
-        <div className="verdict-actions">
-          <button className="primary" onClick={() => go("whatif")}>
-            Compare my plans →
-          </button>
-          <button onClick={() => go("prep")}>Build a prep list →</button>
-        </div>
-      </section>
+          )}
+        </section>
 
-      <section className="official-col" aria-labelledby="alerts-h">
-        <h2 id="alerts-h" className="section-h">
-          {simulated ? "Simulated alerts" : "Official NWS alerts"}
-        </h2>
-        {loading && !weather ? (
-          <p className="muted">Checking alerts…</p>
-        ) : !weather?.availability.alerts ? (
-          <p className="notice notice-bad">
-            Alert status unknown: retrieval failed. Check weather.gov directly.
-          </p>
-        ) : weather.alerts.length === 0 ? (
-          <p className="muted">
-            NWS returned no active alerts for this point at{" "}
-            {stamp(Date.parse(weather.fetchedAt), zone)}. That is not an
-            all-clear.
-          </p>
-        ) : (
-          weather.alerts.map((a) => (
-            <AlertItem
-              key={a.id}
-              alert={a}
-              zone={zone}
-              simulated={simulated}
-              map={{ lat: weather.location.latitude, lon: weather.location.longitude, place: weather.location.name.replace(/^Near /, "") }}
-              story={activeStory(a, history.snapshots, now)}
-            />
-          ))
-        )}
-        {weather && (
-          <EndedAlerts
-            stories={endedStories(weather.availability.alerts ? weather.alerts : null, history.snapshots, now)}
-            zone={zone}
-            simulated={simulated}
-          />
-        )}
-
-        <h2 className="section-h">Now</h2>
-        {obs ? (
-          <>
-            <dl className="obs">
-              <div>
-                <dt>Conditions</dt>
-                <dd>{obs.description || "not reported"}</dd>
-              </div>
-              <div>
-                <dt>Temperature</dt>
-                <dd className="num">{unknown(obs.temperatureF, "°F")}</dd>
-              </div>
+        <div className="hero-side">
+          <section className="current-weather" aria-label={simulated ? "Simulated current conditions" : "Current conditions"}>
+            <p className="eyebrow">{simulated ? "Simulated now" : "Now"}</p>
+            <p className="current-temperature">
+              {obs?.temperatureF == null ? "—" : unknown(obs.temperatureF, "°F")}
+            </p>
+            <p className="current-desc">
+              {obs?.description || (loading ? "Checking the nearest station…" : "Current observation unavailable.")}
+            </p>
+            <dl className="current-metrics">
               <div>
                 <dt>Wind</dt>
-                <dd className="num">
-                  {unknown(obs.windMph, " mph")}
-                  {obs.gustMph !== null
-                    ? `, gusts ${Math.round(obs.gustMph)}`
-                    : ""}
+                <dd>
+                  {unknown(obs?.windMph ?? null, " mph")}
+                  {obs?.gustMph != null ? `, gusts ${Math.round(obs.gustMph)}` : ""}
                 </dd>
               </div>
               <div>
                 <dt>Visibility</dt>
-                <dd className="num">{unknown(obs.visibilityMi, " mi", 1)}</dd>
+                <dd>{unknown(obs?.visibilityMi ?? null, " mi", 1)}</dd>
               </div>
             </dl>
-            <p className="fine">
-              Observed at <span className="num">{obs.station}</span>{" "}
-              {obs.stationName}, {stamp(Date.parse(obs.timestamp), zone)}
+            {obs && (
+              <p className="current-source fine" title={obs.stationName}>
+                {obs.station} · observed {stamp(Date.parse(obs.timestamp), zone)}
+              </p>
+            )}
+          </section>
+          {weather && <NextDay weather={weather} periods={next} zone={zone} />}
+        </div>
+      </div>
+
+      <div className="overview-context">
+        <section className="official-col" aria-labelledby="alerts-h">
+          <h2 id="alerts-h" className="section-h">
+            {simulated ? "Simulated alerts" : "Official NWS alerts"}
+          </h2>
+          {loading && !weather ? (
+            <p className="muted">Checking alerts…</p>
+          ) : !weather?.availability.alerts ? (
+            <p className="notice notice-bad">
+              Alert status unknown: retrieval failed. Check weather.gov
+              directly.
             </p>
-          </>
-        ) : (
-          <p className="muted">
-            {loading
-              ? "Checking the nearest station…"
-              : "Current observation unavailable."}
-          </p>
-        )}
-      </section>
-
-      <DriftPanel weather={weather} level={assessment?.level ?? null} history={history} now={now} simulated={simulated} />
-
-      <section className="why" aria-labelledby="why-h">
-        <h2 id="why-h" className="section-h">
-          Why this level
-        </h2>
-        {assessment &&
-          assessment.factors.length === 0 &&
-          assessment.level === "low" && (
+          ) : weather.alerts.length === 0 ? (
             <p className="muted">
-              No wind, thunder, snow, ice or temperature threshold is met and no
-              alerts are active.
+              NWS returned no active alerts for this point at{" "}
+              {stamp(Date.parse(weather.fetchedAt), zone)}. That is not an
+              all-clear.
             </p>
+          ) : (
+            weather.alerts.map((a) => (
+              <AlertItem
+                key={a.id}
+                alert={a}
+                zone={zone}
+                simulated={simulated}
+                map={{
+                  lat: weather.location.latitude,
+                  lon: weather.location.longitude,
+                  place: weather.location.name.replace(/^Near /, ""),
+                }}
+                story={activeStory(a, history.snapshots, now)}
+              />
+            ))
           )}
-        {assessment && <FactorList factors={assessment.factors} />}
-        {assessment && (
-          <Limitations
-            items={assessment.limitations}
-            title="What this assessment could not check"
-          />
-        )}
-      </section>
+          {weather && (
+            <EndedAlerts
+              stories={endedStories(
+                weather.availability.alerts ? weather.alerts : null,
+                history.snapshots,
+                now,
+              )}
+              zone={zone}
+              simulated={simulated}
+            />
+          )}
+        </section>
 
-      <section className="hourly" aria-labelledby="hourly-h">
-        <h2 id="hourly-h" className="section-h">
-          Hourly forecast
-        </h2>
+      </div>
+
+      <div className="overview-main">
+        {weather && assessment && <SignalRibbon weather={weather} assessment={assessment} zone={zone} />}
+        <div className="cta-row">
+          <a className="cta" href="#whatif">Compare when to go →</a>
+          <a className="cta secondary" href="#prep">Build a prep checklist →</a>
+        </div>
+        <DriftPanel weather={weather} level={assessment?.level ?? null} history={history} now={now} simulated={simulated} />
+      <details className="hourly" open aria-labelledby="hourly-h">
+        <summary id="hourly-h">Hourly forecast</summary>
         {next.length ? (
           <div
             className="hourly-scroll"
@@ -286,40 +285,111 @@ export function Overview({ weather, assessment, loading, now, go, history, simul
             Official point forecast ↗
           </a>
         </p>
+      </details>
+      </div>
+      <section className="product-intro" aria-labelledby="intro-h">
+        <div>
+          <h2 id="intro-h">Weather you can plan around.</h2>
+        </div>
+        <div className="intro-copy">
+          <p>See approaching weather, compare when to go, and build a preparation checklist from National Weather Service forecasts.</p>
+          <details className="intro-guide">
+            <summary>How to use Storm Signal</summary>
+            <ol>
+              <li><strong>Overview:</strong> Choose your location to see approaching hazards, official alerts, and what has changed in the forecast.</li>
+              <li><a href="#whatif">What If?</a> Compare a drive, outdoor event, or home preparation at different times. Each option explains its weather exposure.</li>
+              <li><a href="#prep">Storm Prep:</a> Pick your priorities and work through a sourced checklist for before, during, and after hazardous weather.</li>
+            </ol>
+            <p className="fine">Storm Signal’s levels are its own assessment. Official NWS warnings and their instructions take priority.</p>
+          </details>
+        </div>
       </section>
 
       <section className="method" id="method" aria-labelledby="method-h">
         <h2 id="method-h" className="section-h">
           How levels work
         </h2>
-        <ol className="method-list">
-          <li>
-            Every <b>official NWS alert</b> sets a floor: advisory or statement
-            → Moderate, watch → Elevated, warning → High, tornado/extreme
-            warnings → Critical. NWS’s own severity is shown next to it,
-            unchanged.
-          </li>
-          <li>
-            Forecast values from the NWS hourly and gridpoint data are checked
-            against fixed thresholds: gusts, sustained wind, thunder chance,
-            snow and ice totals, and feels-like temperature.
-          </li>
-          <li>
-            The highest matching rule sets the level. Each rule shows the value,
-            the threshold and the hours it applies to.
-          </li>
-          <li>
-            If any source is missing or the forecast doesn’t cover the window,
-            the level can’t be <b>Low</b>. It shows as <b>Unknown</b> instead.
-          </li>
-        </ol>
-        <p className="fine">
-          Every threshold is published as JSON at <a href="/api/rules">/api/rules</a> so anyone can check or reuse
-          them. Storm Signal does not predict damage or the chance of an
-          accident.
-        </p>
+        <details className="method-details">
+          <summary>Read the rules and limitations</summary>
+          <ol className="method-list">
+            <li>
+              Every <b>official NWS alert</b> sets a floor: advisory or
+              statement → Moderate, watch → Elevated, warning → High,
+              tornado/extreme warnings → Critical. NWS’s own severity is shown
+              next to it, unchanged.
+            </li>
+            <li>
+              Forecast values from the NWS hourly and gridpoint data are checked
+              against fixed thresholds: gusts, sustained wind, thunder chance,
+              snow and ice totals, and feels-like temperature.
+            </li>
+            <li>
+              The highest matching rule sets the level. Each rule shows the
+              value, the threshold and the hours it applies to.
+            </li>
+            <li>
+              If any source is missing or the forecast doesn’t cover the window,
+              the level can’t be <b>Low</b>. It shows as <b>Unknown</b> instead.
+            </li>
+          </ol>
+          <p className="fine">
+            Every threshold is published as JSON at{" "}
+            <a href="/api/rules">/api/rules</a> so anyone can check or reuse
+            them. Storm Signal does not predict damage or the chance of an
+            accident.
+          </p>
+        </details>
       </section>
     </div>
+  );
+}
+
+/** The handful of numbers that drive most decisions, for the next 24 hours. */
+function NextDay({ weather, periods, zone }: { weather: Weather; periods: Weather["periods"]; zone: string }) {
+  const peak = (pick: (p: Weather["periods"][number]) => number | null) => {
+    let best: { v: number; at: number } | null = null;
+    for (const p of periods) {
+      const v = pick(p);
+      if (v !== null && (!best || v > best.v)) best = { v, at: Date.parse(p.start) };
+    }
+    return best;
+  };
+  const sum = (pick: (p: Weather["periods"][number]) => number | null) =>
+    periods.some((p) => pick(p) !== null) ? periods.reduce((n, p) => n + (pick(p) ?? 0), 0) : null;
+  const gust = peak((p) => p.gustMph);
+  const thunder = peak((p) => p.thunderChance);
+  const snow = sum((p) => p.snowIn);
+  const ice = sum((p) => p.iceIn);
+  const alerts = weather.availability.alerts ? weather.alerts.length : null;
+  const when = (b: { v: number; at: number } | null) => (b && b.v > 0 ? `at ${hourOnly(b.at, zone)}` : "");
+  return (
+    <section className="next-day" aria-label="Next 24 hours at a glance">
+      <p className="eyebrow">Next 24 hours</p>
+      <dl>
+        <div>
+          <dt>Peak gust</dt>
+          <dd>{gust ? `${Math.round(gust.v)} mph` : "—"}</dd>
+          <dd className="fine">{gust ? when(gust) : "not provided"}</dd>
+        </div>
+        <div>
+          <dt>Thunder chance</dt>
+          <dd>{thunder ? `${Math.round(thunder.v)}%` : "—"}</dd>
+          <dd className="fine">{thunder ? when(thunder) : "not provided"}</dd>
+        </div>
+        <div>
+          <dt>Snow / ice</dt>
+          <dd>
+            {snow === null ? "—" : `${snow.toFixed(1)}″`} / {ice === null ? "—" : `${ice.toFixed(2)}″`}
+          </dd>
+          <dd className="fine">forecast totals</dd>
+        </div>
+        <div>
+          <dt>Official alerts</dt>
+          <dd>{alerts === null ? "unknown" : alerts}</dd>
+          <dd className="fine">{alerts === null ? "retrieval failed" : alerts ? "active now" : "none active"}</dd>
+        </div>
+      </dl>
+    </section>
   );
 }
 

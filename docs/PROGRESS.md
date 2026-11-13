@@ -86,3 +86,47 @@ Remaining (Keith): record and upload the video, publish the Builder Center artic
 - Every alert card has a timeline from NWS `references` and VTEC actions: issued, updated, extended, upgraded, scheduled end.
 - Snapshots now also record active alerts and are saved whenever they change. The Overview lists alerts that ended in the last 24 hours as expired, cancelled (VTEC CAN), upgraded (UPG) or "no longer listed by NWS" (never assumed cancelled).
 - 74 unit tests and 40 local browser tests pass.
+
+## Overview refinement review — November 13
+
+Local review on branch codex/overview-refinement, based on Claude's final e41a0ff checkpoint.
+- Current city, observed temperature, wind, visibility and observation time now lead the Overview.
+- Reduced the level word and summary size; grouped official alert status and forecast history beside the assessment instead of spanning multiple empty rows.
+- Removed the repeated calm-weather evidence section when there are no factors or limitations. Hazard evidence and missing-data explanations remain visible.
+- Made saved-forecast bars larger and labelled the first and latest saved times; moved implementation details out of the forecast-history explanation.
+- The method explanation is expandable. Official instructions, warning banners, maps, alert lifecycle history and source timestamps remain intact.
+- Verification: 74 unit tests passed before UI edits; production build passed. Final browser results recorded below. Mobile thunderstorm checked at 390 px with no horizontal overflow.
+- Local preview only; no commit, push or deployment performed for this refinement.
+- Final verification: production build and all 36 app browser tests passed (desktop, mobile and dark accessibility checks). A transient Vite cache of an empty module during formatting was cleared; the fresh run passed. Git diff whitespace check is clean.
+
+## Slate and blue palette / introduction — November 13
+
+The local refinement replaces the cream palette with cool slate (#edf2f7), white panels, navy text and blue actions. Dark mode uses navy (#0c1726 / #142337). Risk colors remain semantic; the assessment panel itself uses the neutral panel color.
+
+Overview opens with a compact explanation of what the application does, plus an expandable three-step guide linking to What If? and Storm Prep. The explanation stays visible; the longer guide is closed by default. Urgent warning banners remain above the introduction.
+
+Verification: production build passed; 16 targeted browser checks passed for light/dark contrast, mobile overflow and anchor navigation. Expanded guide visually reviewed at 390 px. Changes remain local on codex/overview-refinement.
+
+## Dial-led local alternative — November 13
+
+Restored the earlier twelve-hour dial concept using the current deterministic assessment and activity engines instead of the retired planning code.
+- Overview now pairs the forecast dial with activity, duration and custom-time controls. A/B/C (and optional D) use the same comparison results on the ring and in the selected-option explanation.
+- The selected activity duration is drawn on a separate dashed outer track. An explicit date/time-zone range and expandable hourly text alternative accompany the ring. Beyond-window starts are listed separately and never wrap onto Now.
+- Kept the cool blue palette, product explanation, full-day assessment, official alert maps/lifecycle history, saved forecast trends, detailed What If? page and prep tools.
+- Small screens place activity controls ahead of the dial. Urgent official instructions remain above the whole application; comparisons stay paused under warnings.
+- Verified: 79 unit tests, 38 app browser checks (desktop/mobile/dark contrast), and production build. The new tests cover horizon boundaries, midnight, missing data, actual peak times, and selection synchronization. Final key-button check added to the same browser test.
+- Review locally at http://127.0.0.1:5173/ on codex/overview-refinement. Still uncommitted, unpushed and undeployed.
+
+## Quiet default view — November 13
+
+Simplified the dial-led alternative after user feedback that it displayed too much at once.
+- Replaced the embedded activity button group with one selector. Duration/custom timing and comparison explanations use native disclosures.
+- Kept one selected exposure result next to the dial; removed the duplicated large 24-hour scale and the second standalone evidence section.
+- The 24-hour assessment remains labelled and available with its evidence/limitations. Forecast history and the hourly forecast table are collapsed by default. Official alerts and urgent instructions remain visible.
+- Shortened the introduction and dial captions while preserving dates, time zones, the hourly text alternative and out-of-window notes.
+- Production build passes. Browser tests now open optional sections explicitly and check that supporting history/table sections begin collapsed.
+- Final verification for the quiet view: all 38 app browser checks passed, including desktop/mobile/dark accessibility, collapse defaults, alert maps and synchronized dial selection. Still local and uncommitted.
+
+## Final layout — November 13
+
+Claude reworked the dial-led alternative after feedback ("too much empty space", "maybe lose the dial"): the Overview became an answer page (navy hero with the level, reason and next-24-hour key numbers; ribbon, calls to action, forecast changes and hourly table beside official alerts), and the dial moved to What If?, laid out beside its controls with the option cards full width below. 79 unit tests and 42 browser tests pass. Committed, merged to main and deployed.

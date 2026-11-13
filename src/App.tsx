@@ -127,9 +127,6 @@ export function App() {
   }, [weather, serverAssessment, simulated, now, clockNow]);
   const stale = !simulated && weather ? isStale(weather, clockNow) : false;
   const urgent = assessment?.urgent;
-  const go = (p: string) => {
-    window.location.hash = p;
-  };
   async function share() {
     const url = shareUrl({
       page,
@@ -268,7 +265,7 @@ export function App() {
 
       <main id="main" tabIndex={-1}>
         {page === "overview" && (
-          <Overview weather={weather} assessment={assessment} loading={loading} now={now} go={go} history={history} simulated={simulated} />
+          <Overview weather={weather} assessment={assessment} loading={loading} now={now} history={history} simulated={simulated} />
         )}
         {page === "whatif" && (
           <WhatIf
