@@ -41,6 +41,10 @@ Any point NWS forecasts for (U.S. states, DC and territories). Forecast history 
 
 Edit one file, `stormsignal.config.json`, to list your cities, then deploy. Step-by-step guide, costs, threshold changes and the embeddable badge: **[docs/reuse.md](docs/reuse.md)**.
 
+Live badge (one line of HTML on any website):
+
+[![Storm Signal weather risk level for Kalamazoo, MI](https://d3p9tcn7282g7r.cloudfront.net/api/badge?loc=kalamazoo)](https://d3p9tcn7282g7r.cloudfront.net/#overview?loc=kalamazoo)
+
 ```html
 <a href="https://d3p9tcn7282g7r.cloudfront.net/#overview?loc=kalamazoo"><img src="https://d3p9tcn7282g7r.cloudfront.net/api/badge?loc=kalamazoo" alt="Storm Signal weather risk level for Kalamazoo, MI" height="28"></a>
 ```
