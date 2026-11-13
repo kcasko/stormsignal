@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: StormSignal read-only weather API. Backend-only local milestone; not deployed.
+Resources:
+  WeatherLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-weather"
+      RetentionInDays: 7
+  WeatherRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: WeatherLogsOnly
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents]
+                Resource: !Sub "${WeatherLog.Arn}:*"
+  WeatherApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: "$default"
+      DefaultRouteSettings:
+        ThrottlingRateLimit: 2
+        ThrottlingBurstLimit: 4
+  WeatherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-weather"
+      Runtime: nodejs22.x
+      Architectures: [arm64]
+      CodeUri: build/
+      Handler: handler.handler
+      MemorySize: 256
+      Timeout: 20
+      ReservedConcurrentExecutions: 2
+      Role: !GetAtt WeatherRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref WeatherLog
+      Events:
+        Weather:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref WeatherApi
+            Path: /api/weather
+            Method: GET
+            PayloadFormatVersion: "2.0"
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref WeatherApi
+            Path: /api/health
+            Method: GET
+            PayloadFormatVersion: "2.0"
+Outputs:
+  ApiUrl:
+    Value: !Sub "https://${WeatherApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}"
