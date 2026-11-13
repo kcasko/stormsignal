@@ -118,7 +118,9 @@ export function placesIn(box: { minLon: number; minLat: number; maxLon: number; 
   return PLACES.filter(([, , lat, lon]) => lat >= box.minLat && lat <= box.maxLat && lon >= box.minLon && lon <= box.maxLon)
     .sort((a, b) => b[4] - a[4])
     .slice(0, 300)
-    .map((p) => ({ p, score: zipsNear(p[2], p[3]) * 1000 + p[4] }))
+    // Count ZIPs within the place's own footprint (radius from its land area), so a small
+    // neighbour can't borrow a big city's ZIP codes.
+    .map((p) => ({ p, score: zipsNear(p[2], p[3], Math.max(3, Math.sqrt(p[4] / Math.PI))) * 1000 + p[4] }))
     .sort((a, b) => b.score - a.score)
     .reduce<[string, string, number, number, number][]>((kept, { p }) => {
       // One label per cluster: skip places within about a sixth of the box of one already kept.

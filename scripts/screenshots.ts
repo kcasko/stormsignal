@@ -40,7 +40,9 @@ try {
     await page.goto(`${base}/#${s.hash}`);
     if (s.source !== "live") await page.locator(".src select").selectOption(s.source);
     else await page.getByText(/^Retrieved /).waitFor({ timeout: 25000 });
-    await page.waitForTimeout(400);
+    // Let alert-area lookups (zone outlines, town labels) finish before capturing.
+    await page.waitForLoadState("networkidle").catch(() => {});
+    await page.waitForTimeout(600);
     if (s.element) await page.locator(s.element).screenshot({ path: resolve(out, s.name + ".png") });
     else await page.screenshot({ path: resolve(out, s.name + ".png"), fullPage: !!s.full });
     console.log(s.name + ".png");
