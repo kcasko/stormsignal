@@ -58,3 +58,16 @@ Keith chose to rebuild the frontend to the new handoff (Overview / What If? / St
 - Architecture diagram (`docs/architecture.svg` and PNG) and 7 screenshots in `docs/screenshots/` (live and labelled simulated).
 
 Remaining (Keith): deploy approval, choose a repo license and visibility, record and upload the video, publish the article, submit before Nov 16, 1 PM PT.
+
+## Contest features — November 13
+
+Built all seven additions Keith approved:
+1. **Forecast drift**: EventBridge Scheduler (every 30 min) → snapshot Lambda → DynamoDB (TTL 72 h), saving each new NWS issuance for the listed cities; `/api/history`; Overview panel comparing the same hours (trend, changes, level strip). Simulated scenarios include labelled fictional history.
+2. **Any U.S. place**: ZIP and "City, ST" from bundled Census Gazetteer data, street addresses via the Census Geocoder, "use my location" rounded to about 1 km; `pt:lat,lon` ids validated and U.S.-only; the place name and time zone come from NWS.
+3. **Offline / print / calendar**: service worker (production only), offline notice, print layout, `.ics` reminders 2 h before forecast deadlines.
+4. **Your own start time** as What If? option D.
+5. **Share this view** links (hash state).
+6. **What would change the level** on Overview and each option.
+7. **`/api/rules`** JSON catalog.
+
+Verified: 61 unit tests, 38 Playwright tests (incl. offline reload and print), `sam validate --lint` (us-east-1), live routes against NWS and Census (ZIP 49007, "Boulder, CO", 1600 Pennsylvania Ave; a London point rejected), and the local snapshot job writing history for all nine cities. Still **not deployed**.

@@ -6,9 +6,12 @@
 
 A serverless weather decision-support app. It turns live National Weather Service forecasts and alerts into an explained risk level, a What If? comparison of plans, and a hazard-specific preparation checklist. Built for the AWS Builder Center Weekend Challenge "No Pipeline, No Problem" (Nov 13–16, 2026).
 
-- **Overview:** Storm Signal level (Low → Critical, or Unknown) for the next 24 h, with the evidence behind it; official NWS alerts shown separately; current observation; hourly table.
-- **What If?:** driving, outdoor event, or home prep, compared for now / +3 h / +6 h with activity-specific rules and plain-language differences.
-- **Storm Prep:** tasks chosen by hazard and by what you care about, each with a reason, timing and source; Before / During / After; saved in your browser.
+- **Overview:** Storm Signal level (Low → Critical, or Unknown) for the next 24 h, with the evidence behind it and **what would change it**; official NWS alerts shown separately; current observation; hourly table.
+- **How the forecast has changed:** a scheduled Lambda saves each new NWS forecast to DynamoDB, so the app can show whether the forecast for the same hours is trending worse, better, steady or shifting.
+- **What If?:** driving, outdoor event, or home prep, compared for now / +3 h / +6 h and **your own start time**, with activity-specific rules and plain-language differences.
+- **Storm Prep:** tasks chosen by hazard and by what you care about, each with a reason, timing and source; Before / During / After; **calendar reminders (.ics)**, print layout, and **works offline**.
+- **Any U.S. place:** ZIP, "City, ST", street address or "use my location" (rounded to about 1 km). **Share this view** links restore the place, scenario and plan.
+- **Open rules:** every threshold is published at `/api/rules`.
 
 All classifications come from deterministic, documented rules (`shared/`). No generative AI, no accounts, no server-side user data.
 
@@ -19,8 +22,8 @@ Requires Node.js ≥ 22.12.
 ```powershell
 npm ci
 npm run dev        # web on http://127.0.0.1:5173, API on 127.0.0.1:8787
-npm test           # 45 unit/integration tests
-npm run e2e        # 26 Playwright browser + axe accessibility tests (desktop and mobile)
+npm test           # 61 unit/integration tests
+npm run e2e        # 38 Playwright tests: desktop + mobile, axe accessibility, offline reload, print
 npm run build      # type check, frontend to dist/, Lambda bundle to build/handler.mjs
 npx tsx scripts/live-check.ts   # real NWS check for all cities
 npx tsx scripts/screenshots.ts  # regenerate docs/screenshots (needs npm run dev)
@@ -30,7 +33,7 @@ Use the source menu in the header to switch between **Live NWS data** and four *
 
 ## Coverage
 
-Nine city-center points: Kalamazoo, Grand Rapids, Battle Creek, Portage, Benton Harbor, South Haven, Detroit (MI), Chicago (IL), Indianapolis (IN). Not address-level, not nationwide.
+Any point NWS forecasts for (U.S. states, DC and territories). Forecast history is saved for nine listed cities: Kalamazoo, Grand Rapids, Battle Creek, Portage, Benton Harbor, South Haven, Detroit (MI), Chicago (IL), Indianapolis (IN).
 
 ## Deploy (manual, creates billable resources)
 
@@ -39,7 +42,7 @@ aws sts get-caller-identity   # confirm the intended account; only if expired: a
 .\scripts\deploy.ps1 -UserAgent "StormSignal/0.2 (https://your-site, you@example.com)" -BudgetEmail you@example.com
 ```
 
-Deploys `template.yaml` to `us-east-1` (the account default): private S3 + CloudFront, HTTP API → Lambda, CloudWatch logs and an alarm, and an optional budget. Then syncs `dist/`. Teardown steps are in `docs/architecture.md`.
+Deploys `template.yaml` to `us-east-1` (the account default): private S3 + CloudFront, HTTP API → Lambda, EventBridge Scheduler → snapshot Lambda → DynamoDB, CloudWatch logs and an alarm, and an optional budget. Then syncs `dist/`. Teardown steps are in `docs/architecture.md`.
 
 ## Docs
 

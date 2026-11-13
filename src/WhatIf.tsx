@@ -11,8 +11,10 @@ import {
   LevelMark,
   Limitations,
   PausedDuringWarning,
+  WhatWouldChange,
 } from "./components";
-import { clock, day, unknown } from "./format";
+import { HOUR } from "../shared/rules";
+import { clock, day, hourOnly, unknown } from "./format";
 
 interface Props {
   weather: Weather | null;
@@ -22,6 +24,8 @@ interface Props {
   setActivity: (a: Activity) => void;
   hours: number;
   setHours: (h: number) => void;
+  custom: number | null;
+  setCustom: (t: number | null) => void;
 }
 
 const durationLabel = (h: number) =>
@@ -35,13 +39,23 @@ export function WhatIf({
   setActivity,
   hours,
   setHours,
+  custom,
+  setCustom,
 }: Props) {
   const zone = weather?.location.timeZone ?? "America/Detroit";
   const spec = ACTIVITIES[activity];
   const options = useMemo(
-    () => (weather ? compareOptions(weather, activity, hours, now) : []),
-    [weather, activity, hours, now],
+    () => (weather ? compareOptions(weather, activity, hours, now, custom) : []),
+    [weather, activity, hours, now, custom],
   );
+  // Start-hour choices come from the forecast itself, so they are always absolute, zone-correct times.
+  const hourStarts = (weather?.periods ?? [])
+    .map((p) => Date.parse(p.start))
+    .filter((t) => t + HOUR > now && t < now + 48 * HOUR);
+  const customHour = custom === null ? "" : String(hourStarts.find((t) => custom >= t && custom < t + HOUR) ?? "");
+  const customMinute = custom === null || !customHour ? 0 : Math.round((custom - Number(customHour)) / 60000);
+  const setYourTime = (hourMs: string, minute: number) =>
+    setCustom(hourMs ? Math.max(Number(hourMs) + minute * 60000, now) : null);
   const diffs = useMemo(
     () => explainDifferences(options, zone),
     [options, zone],
@@ -90,6 +104,41 @@ export function WhatIf({
             ))}
           </select>
         </label>
+        <div className="yourtime" role="group" aria-labelledby="yourtime-l">
+          <span id="yourtime-l">Your own start time (D)</span>
+          <div>
+            <select
+              aria-label="Start hour"
+              value={customHour}
+              onChange={(e) => setYourTime(e.target.value, customMinute)}
+              disabled={!hourStarts.length}
+            >
+              <option value="">Not set</option>
+              {hourStarts.map((t) => (
+                <option key={t} value={t}>
+                  {day(t, zone).split(",")[0]} {hourOnly(t, zone)}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label="Start minute"
+              value={customMinute}
+              onChange={(e) => setYourTime(customHour, Number(e.target.value))}
+              disabled={!customHour}
+            >
+              {[0, 15, 30, 45].map((m) => (
+                <option key={m} value={m}>
+                  :{String(m).padStart(2, "0")}
+                </option>
+              ))}
+            </select>
+            {custom !== null && (
+              <button type="button" className="text-btn" onClick={() => setCustom(null)}>
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {urgent && (
@@ -138,6 +187,7 @@ export function WhatIf({
                       ? "Exposure can't be rated"
                       : "Exposure on forecast evidence"}
                   </p>
+                  <WhatWouldChange level={o.level} factors={o.factors} />
                   <dl className="conds">
                     <div>
                       <dt>Peak gust</dt>

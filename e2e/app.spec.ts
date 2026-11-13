@@ -36,6 +36,12 @@ function liveWeather(id = "kalamazoo", gusty = false) {
   };
 }
 async function mockApi(page: Page, handler?: (id: string) => { status?: number; body: unknown }) {
+  await page.route("**/api/history?**", (route) => route.fulfill({ json: { tracked: true, snapshots: [] } }));
+  await page.route("**/api/geocode?**", (route) =>
+    route.fulfill({
+      json: { results: [{ id: "pt:40.024,-105.251", label: "Boulder, CO", latitude: 40.024, longitude: -105.251, source: "place" }] },
+    }),
+  );
   await page.route("**/api/weather?**", async (route) => {
     const id = new URL(route.request().url()).searchParams.get("location") || "";
     const r = handler ? handler(id) : { body: liveWeather(id) };
@@ -137,4 +143,43 @@ test("no serious accessibility violations with a warning banner and simulated da
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
   const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(serious.map((v) => `${v.id}: ${v.nodes.length} × ${v.nodes[0]?.target}`)).toEqual([]);
+});
+
+test("search any U.S. place and load its forecast", async ({ page }) => {
+  await mockApi(page, (id) => ({ body: { ...liveWeather(id), location: { id, name: "Near Boulder, CO", latitude: 40.024, longitude: -105.251, timeZone: "America/Denver" } } }));
+  await page.goto("/#overview");
+  await page.getByRole("button", { name: "Find a place" }).click();
+  await page.getByLabel("ZIP, city or street address").fill("Boulder, CO");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await page.getByRole("button", { name: /Boulder, CO/ }).click();
+  await expect(page.getByRole("heading", { name: "Weather overview for Near Boulder, CO" })).toBeAttached();
+  await expect(page.getByText(/saved for the listed cities only/)).toBeVisible();
+});
+
+test("share link restores place, source, activity and your own time", async ({ page }) => {
+  await mockApi(page);
+  const at = Math.round((Date.parse("2026-11-13T19:00:00Z") + 4.5 * 3600000) / 60000);
+  await page.goto(`/#whatif?loc=kalamazoo&src=thunderstorm&act=event&dur=2&at=${at}`);
+  await expect(page.locator(".src select")).toHaveValue("thunderstorm");
+  await expect(page.locator(".option h2")).toHaveText(["Start now", "Start in 3 hours", "Start in 6 hours", "Start at 6:30 PM"]);
+  await expect(page.locator("select").filter({ hasText: "2 hours" })).toHaveValue("2");
+});
+
+test("drift panel and what-would-change explain the scenario", async ({ page }) => {
+  await mockApi(page);
+  await page.goto("/#overview?src=thunderstorm");
+  await expect(page.locator(".trend")).toContainText("Trending worse");
+  await expect(page.locator(".drift-changes")).toContainText("33 mph → 60 mph");
+  await expect(page.locator(".verdict .cf")).toContainText("Wind gusts stayed below 58 mph");
+});
+
+test("calendar export is off for simulated data and available for live deadlines", async ({ page }) => {
+  await mockApi(page, (id) => ({ body: liveWeather(id, true) }));
+  await page.goto("/#prep?src=thunderstorm");
+  await expect(page.getByRole("button", { name: "Add deadlines to my calendar" })).toBeDisabled();
+  await page.goto("/?x=1#prep?src=live");
+  const button = page.getByRole("button", { name: "Add deadlines to my calendar" });
+  await expect(button).toBeEnabled();
+  const [download] = await Promise.all([page.waitForEvent("download"), button.click()]);
+  expect(download.suggestedFilename()).toBe("storm-signal-prep.ics");
 });

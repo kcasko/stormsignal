@@ -3,6 +3,7 @@ import type { Alert, Classification, Factor } from "../shared/types";
 import { LEVELS } from "../shared/types";
 import { levelName } from "../shared/rules";
 import { stamp } from "./format";
+import { whatWouldChange } from "../shared/counterfactual";
 
 /** Level word + five-segment glyph. Never colour alone. */
 export function LevelMark({
@@ -139,5 +140,21 @@ export function PausedDuringWarning({
       <summary>{label}</summary>
       {children}
     </details>
+  );
+}
+
+/** "What would change the level": the forecast changes needed to lower it. */
+export function WhatWouldChange({ level, factors }: { level: Classification; factors: Factor[] }) {
+  const cf = whatWouldChange(level, factors);
+  if (!cf) return null;
+  return (
+    <div className="cf">
+      <p className="cf-head">{cf.headline}</p>
+      <ul>
+        {cf.conditions.map((c) => (
+          <li key={c}>{c}</li>
+        ))}
+      </ul>
+    </div>
   );
 }

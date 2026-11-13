@@ -30,16 +30,23 @@ interface Live extends WeatherState {
   key: string;
 }
 
-export function useWeather(locationId: string, mode: Mode, refresh: number): WeatherState {
+export function useWeather(locationId: string, label: string, mode: Mode, refresh: number): WeatherState {
   const key = `${locationId}|${refresh}`;
   const [live, setLive] = useState<Live | null>(null);
 
   // Scenarios are computed synchronously, so they can never mix with live data.
   const scenario = useMemo(() => {
     if (mode === "live") return null;
-    const location = locations.find((l) => l.id === locationId)!;
+    // Scenarios are fictional; a custom place keeps its label and uses the scenario's Eastern clock.
+    const location = locations.find((l) => l.id === locationId) ?? {
+      id: locationId,
+      name: label,
+      latitude: 0,
+      longitude: 0,
+      timeZone: "America/Detroit",
+    };
     return scenarioWeather(location, mode);
-  }, [locationId, mode]);
+  }, [locationId, label, mode]);
 
   useEffect(() => {
     if (mode !== "live") return;

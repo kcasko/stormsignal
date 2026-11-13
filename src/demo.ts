@@ -2,6 +2,7 @@
 // They never replace failed live data and are always shown with a simulation banner.
 import type { Alert, Location, Period, Weather } from "../shared/types";
 import { alertKind, HOUR } from "../shared/rules";
+import { toSnapshot, type Snapshot } from "../shared/drift";
 
 export const SCENARIOS = [
   { id: "thunderstorm", label: "Severe thunderstorms + wind" },
@@ -134,4 +135,29 @@ export function scenarioWeather(location: Location, id: ScenarioId): Weather {
     ];
   }
   return base;
+}
+
+/**
+ * SIMULATED forecast history for the scenarios, so the drift panel can be demonstrated.
+ * Thunderstorm: earlier forecasts were weaker and the storm "trended worse". Winter: steady.
+ */
+export function scenarioHistory(id: ScenarioId, weather: Weather): Snapshot[] {
+  if (id !== "thunderstorm" && id !== "winter") return [];
+  const out: Snapshot[] = [];
+  for (let k = 0; k <= 8; k++) {
+    const capturedAt = SCENARIO_NOW - (24 - k * 3) * HOUR;
+    const f = id === "thunderstorm" ? 0.55 + (0.45 * k) / 8 : 1;
+    const scaled: Weather = {
+      ...weather,
+      periods: weather.periods.map((p) => ({
+        ...p,
+        gustMph: p.gustMph === null ? null : Math.round(Math.max(15, p.gustMph * f)),
+        thunderChance: p.thunderChance === null ? null : Math.round(p.thunderChance * (id === "thunderstorm" ? 0.4 + (0.6 * k) / 8 : 1)),
+        snowIn: p.snowIn === null ? null : Math.round(p.snowIn * (id === "winter" ? 0.9 + 0.1 * (k / 8) : 1) * 100) / 100,
+      })),
+    };
+    const level = id === "winter" ? "high" : k < 3 ? "moderate" : k < 6 ? "elevated" : "high";
+    out.push({ ...toSnapshot(scaled, level, SCENARIO_NOW, 48), capturedAt: new Date(capturedAt).toISOString() });
+  }
+  return out;
 }

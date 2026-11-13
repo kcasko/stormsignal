@@ -3,7 +3,7 @@
 ## Automated (Vitest)
 
 ```bash
-npm test          # 45 tests, about 0.4 s, no network
+npm test          # 61 tests, under 1 s, no network
 npm run typecheck
 npm run build     # type check + Vite build + Lambda bundle (build/handler.mjs)
 ```
@@ -13,6 +13,7 @@ npm run build     # type check + Vite build + Lambda bundle (build/handler.mjs)
 | `tests/riskEngine.test.ts` | Low only when every source succeeded; failed alerts/forecast/grid or short coverage → Unknown; inclusive thresholds at boundaries; snow/ice summed over the window; 24 h window edges; wording fallback only where numeric data is missing; official alerts kept separate and labelled; warning → High, tornado → Critical + urgent; future warnings not urgent now; determinism. |
 | `tests/impactEngine.test.ts` | Leave now / +3 h / +6 h; differences cite evidence and never say "safe"; the explanation leads with the metric that set the level; activity-specific thresholds on the same storm; ice while driving → High; option past forecast end → Unknown; warnings override comparisons; expired warnings don't carry over; missing gust data reported; alerts starting just after a window are flagged. |
 | `tests/preparationEngine.test.ts` | Every task and guidance item has a reason and an https source; wind and winter task selection; timing derived from the forecast; category filtering; baseline-only when hazards are unknown; urgent warning carried into the plan. |
+| `tests/features.test.ts` | ZIP/city search from bundled Census data (exact name first, then size); point-id rounding and U.S.-only validation; only street addresses reach the Census Geocoder; drift says "not enough history" instead of guessing, compares the same hours, and detects worse or steady trends; snapshots are deduplicated by NWS issuance; untracked places return `tracked: false`; "what would change" names the threshold and next level and defers to official alerts; option D at your own time; `/api/rules` thresholds; RFC 5545 calendar export with folded lines and reminders 2 h before the deadline. |
 | `tests/weather.test.ts` | NWS URL allow-listing; wind text and ISO-duration parsing; unit conversion; accumulation spreading; unexpected units → unknown (not 0); malformed data rejected; ended alerts filtered; observation parsing; full live assembly; partial failures reported independently; network errors; handler validation (400/404/405); health and locations need no network. |
 
 Fixtures in `tests/fixtures/weather.ts` are synthetic and labelled as such.
@@ -23,13 +24,15 @@ Fixtures in `tests/fixtures/weather.ts` are synthetic and labelled as such.
 npm run e2e        # starts or reuses Vite on 127.0.0.1:5173; /api is mocked, so no NWS calls
 ```
 
-`e2e/app.spec.ts` runs on desktop Chrome and a Pixel 7 profile (26 passing):
+`e2e/app.spec.ts` and `e2e/offline.spec.ts` run on desktop Chrome and a Pixel 7 profile, plus dark-mode axe checks (38 passing):
 - Live Overview shows the level, the evidence sentence, and alert status. An API 503 shows "Data unavailable", never Low.
 - Simulated scenarios are always bannered. A tornado warning shows the override, and the comparison and routine tasks are paused (collapsed, full contrast).
 - What If? shows three options with labels and a differences sentence; switching activity changes the options.
 - The checklist persists across reload, and Reset works.
 - In-page anchors (skip link, "How levels work") don't trigger the page router.
 - No horizontal overflow on any page.
+- Place search loads a new point's forecast; share links restore place, source, activity, duration and your own time; the drift panel and "what would change" render; calendar export is off for simulated data and downloads `storm-signal-prep.ics` for live deadlines.
+- **Offline**: against the production build (`vite preview`), the app reloads offline with the offline notice, and checked tasks survive. **Print**: the print layout hides controls and labels simulated data.
 - **axe-core (WCAG 2.0/2.1 A and AA): no serious or critical violations** on all three pages, in light mode, dark mode, and with the warning banner.
 
 `e2e/live.spec.ts` is the post-deploy smoke test for the public URL: `$env:BASE_URL="https://<cloudfront>"; npx playwright test e2e/live.spec.ts --project desktop`.

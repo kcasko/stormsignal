@@ -1,85 +1,115 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660" font-family="Segoe UI, Helvetica, Arial, sans-serif">
   <title>Storm Signal serverless architecture</title>
   <defs>
     <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0 0L10 5L0 10z" fill="#16181b"/>
     </marker>
   </defs>
-  <rect width="1200" height="560" fill="#f4f2ec"/>
+  <rect width="1200" height="660" fill="#f4f2ec"/>
   <text x="40" y="52" font-size="28" font-weight="700" fill="#16181b" font-family="Georgia, serif">Storm Signal — serverless architecture</text>
   <text x="40" y="80" font-size="15" fill="#5b5f66">No servers, no pipeline: one SAM template, deployed manually. Everything inside the dashed box is in AWS (us-east-1).</text>
 
   <!-- user -->
-  <rect x="40" y="230" width="150" height="90" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
-  <text x="115" y="268" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">Browser</text>
-  <text x="115" y="292" text-anchor="middle" font-size="13" fill="#5b5f66">React + TypeScript</text>
-  <text x="115" y="310" text-anchor="middle" font-size="12" fill="#5b5f66">checklist in localStorage</text>
+  <rect x="40" y="200" width="160" height="100" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
+  <text x="120" y="236" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">Browser</text>
+  <text x="120" y="258" text-anchor="middle" font-size="13" fill="#5b5f66">React + TypeScript</text>
+  <text x="120" y="276" text-anchor="middle" font-size="12" fill="#5b5f66">service worker (offline)</text>
+  <text x="120" y="292" text-anchor="middle" font-size="12" fill="#5b5f66">checklist in localStorage</text>
 
   <!-- AWS boundary -->
-  <rect x="240" y="110" width="700" height="420" fill="none" stroke="#16181b" stroke-width="1.2" stroke-dasharray="7 5"/>
+  <rect x="240" y="110" width="700" height="520" fill="none" stroke="#16181b" stroke-width="1.2" stroke-dasharray="7 5"/>
   <text x="256" y="134" font-size="13" font-weight="700" fill="#5b5f66" letter-spacing="1.5">AWS</text>
 
   <!-- CloudFront -->
-  <rect x="270" y="225" width="180" height="100" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
-  <text x="360" y="262" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">CloudFront</text>
-  <text x="360" y="285" text-anchor="middle" font-size="13" fill="#5b5f66">HTTPS · one origin</text>
-  <text x="360" y="304" text-anchor="middle" font-size="12" fill="#5b5f66">security headers · cache</text>
+  <rect x="270" y="200" width="180" height="100" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
+  <text x="360" y="237" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">CloudFront</text>
+  <text x="360" y="260" text-anchor="middle" font-size="13" fill="#5b5f66">HTTPS · one origin</text>
+  <text x="360" y="279" text-anchor="middle" font-size="12" fill="#5b5f66">security headers · cache</text>
 
   <!-- S3 -->
-  <rect x="520" y="150" width="170" height="80" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
-  <text x="605" y="185" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">S3 (private)</text>
-  <text x="605" y="208" text-anchor="middle" font-size="13" fill="#5b5f66">static app build</text>
+  <rect x="520" y="140" width="170" height="70" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
+  <text x="605" y="172" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">S3 (private)</text>
+  <text x="605" y="194" text-anchor="middle" font-size="13" fill="#5b5f66">static app build</text>
 
   <!-- API GW -->
-  <rect x="520" y="320" width="170" height="90" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
-  <text x="605" y="355" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">API Gateway</text>
-  <text x="605" y="377" text-anchor="middle" font-size="13" fill="#5b5f66">HTTP API</text>
-  <text x="605" y="396" text-anchor="middle" font-size="12" fill="#5b5f66">throttled 5 rps / burst 10</text>
+  <rect x="520" y="260" width="170" height="90" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
+  <text x="605" y="294" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">API Gateway</text>
+  <text x="605" y="316" text-anchor="middle" font-size="13" fill="#5b5f66">HTTP API</text>
+  <text x="605" y="335" text-anchor="middle" font-size="12" fill="#5b5f66">throttled 5 rps / burst 10</text>
 
-  <!-- Lambda -->
-  <rect x="740" y="300" width="180" height="130" fill="#fbfaf6" stroke="#9a4607" stroke-width="2.5"/>
-  <text x="830" y="333" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">Lambda</text>
-  <text x="830" y="355" text-anchor="middle" font-size="12" fill="#5b5f66">Node 22 · arm64 · ≤3 concurrent</text>
-  <text x="830" y="378" text-anchor="middle" font-size="13" fill="#16181b">nwsClient</text>
-  <text x="830" y="397" text-anchor="middle" font-size="13" fill="#16181b">riskEngine (rules)</text>
-  <text x="830" y="416" text-anchor="middle" font-size="12" fill="#5b5f66">in-memory cache</text>
+  <!-- Weather Lambda -->
+  <rect x="740" y="240" width="180" height="140" fill="#fbfaf6" stroke="#9a4607" stroke-width="2.5"/>
+  <text x="830" y="268" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">Lambda: weather</text>
+  <text x="830" y="288" text-anchor="middle" font-size="12" fill="#5b5f66">Node 22 · arm64 · ≤3 concurrent</text>
+  <text x="830" y="310" text-anchor="middle" font-size="13" fill="#16181b">nwsClient · riskEngine</text>
+  <text x="830" y="329" text-anchor="middle" font-size="13" fill="#16181b">geocode · rules · history</text>
+  <text x="830" y="348" text-anchor="middle" font-size="12" fill="#5b5f66">bundled Census ZIP/place data</text>
+  <text x="830" y="366" text-anchor="middle" font-size="12" fill="#5b5f66">in-memory cache</text>
+
+  <!-- Scheduler -->
+  <rect x="270" y="440" width="180" height="80" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
+  <text x="360" y="472" text-anchor="middle" font-size="16" font-weight="700" fill="#16181b">EventBridge Scheduler</text>
+  <text x="360" y="495" text-anchor="middle" font-size="13" fill="#5b5f66">every 30 minutes</text>
+
+  <!-- Snapshot Lambda -->
+  <rect x="520" y="430" width="170" height="100" fill="#fbfaf6" stroke="#9a4607" stroke-width="2.5"/>
+  <text x="605" y="462" text-anchor="middle" font-size="16" font-weight="700" fill="#16181b">Lambda: snapshot</text>
+  <text x="605" y="484" text-anchor="middle" font-size="12" fill="#5b5f66">saves each new NWS</text>
+  <text x="605" y="501" text-anchor="middle" font-size="12" fill="#5b5f66">forecast per city</text>
+  <text x="605" y="518" text-anchor="middle" font-size="12" fill="#5b5f66">≤1 concurrent</text>
+
+  <!-- DynamoDB -->
+  <rect x="740" y="440" width="180" height="80" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
+  <text x="830" y="472" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">DynamoDB</text>
+  <text x="830" y="494" text-anchor="middle" font-size="12" fill="#5b5f66">forecast history · 72 h TTL</text>
+  <text x="830" y="510" text-anchor="middle" font-size="12" fill="#5b5f66">on-demand</text>
 
   <!-- CloudWatch -->
-  <rect x="740" y="460" width="180" height="56" fill="#fbfaf6" stroke="#16181b" stroke-width="1.2"/>
-  <text x="830" y="485" text-anchor="middle" font-size="15" font-weight="700" fill="#16181b">CloudWatch</text>
-  <text x="830" y="504" text-anchor="middle" font-size="12" fill="#5b5f66">JSON logs (7 d) · error alarm</text>
+  <rect x="520" y="570" width="400" height="44" fill="#fbfaf6" stroke="#16181b" stroke-width="1.2"/>
+  <text x="720" y="598" text-anchor="middle" font-size="14" fill="#16181b"><tspan font-weight="700">CloudWatch</tspan> · logs from both Lambdas (7 days) · error alarm</text>
 
-  <!-- NWS -->
-  <rect x="990" y="270" width="180" height="190" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
-  <text x="1080" y="302" text-anchor="middle" font-size="16" font-weight="700" fill="#16181b">api.weather.gov</text>
-  <text x="1080" y="322" text-anchor="middle" font-size="12" fill="#5b5f66">National Weather Service</text>
-  <text x="1006" y="352" font-size="12.5" fill="#16181b">• point metadata</text>
-  <text x="1006" y="372" font-size="12.5" fill="#16181b">• hourly forecast</text>
-  <text x="1006" y="392" font-size="12.5" fill="#16181b">• gridpoint: gusts, thunder,</text>
-  <text x="1018" y="410" font-size="12.5" fill="#16181b">snow, ice, feels-like</text>
-  <text x="1006" y="430" font-size="12.5" fill="#16181b">• station observation</text>
-  <text x="1006" y="450" font-size="12.5" fill="#16181b">• active alerts</text>
+  <!-- External -->
+  <rect x="990" y="200" width="180" height="200" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
+  <text x="1080" y="230" text-anchor="middle" font-size="16" font-weight="700" fill="#16181b">api.weather.gov</text>
+  <text x="1080" y="250" text-anchor="middle" font-size="12" fill="#5b5f66">National Weather Service</text>
+  <text x="1006" y="280" font-size="12.5" fill="#16181b">• point metadata</text>
+  <text x="1006" y="300" font-size="12.5" fill="#16181b">• hourly forecast</text>
+  <text x="1006" y="320" font-size="12.5" fill="#16181b">• gridpoint: gusts, thunder,</text>
+  <text x="1018" y="338" font-size="12.5" fill="#16181b">snow, ice, feels-like</text>
+  <text x="1006" y="358" font-size="12.5" fill="#16181b">• station observation</text>
+  <text x="1006" y="378" font-size="12.5" fill="#16181b">• active alerts</text>
+  <rect x="990" y="430" width="180" height="70" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>
+  <text x="1080" y="458" text-anchor="middle" font-size="15" font-weight="700" fill="#16181b">Census Geocoder</text>
+  <text x="1080" y="480" text-anchor="middle" font-size="12" fill="#5b5f66">street addresses only</text>
 
   <!-- arrows -->
   <g stroke="#16181b" stroke-width="1.6" fill="none" marker-end="url(#a)">
-    <path d="M190 275 H268"/>
-    <path d="M450 255 C490 255 490 190 518 190"/>
-    <path d="M450 295 C490 295 490 365 518 365"/>
-    <path d="M690 365 H738"/>
-    <path d="M920 365 H988"/>
-    <path d="M830 430 V458"/>
+    <path d="M200 250 H268"/>
+    <path d="M450 230 C490 230 490 175 518 175"/>
+    <path d="M450 270 C490 270 490 305 518 305"/>
+    <path d="M690 305 H738"/>
+    <path d="M920 300 H988"/>
+    <path d="M920 360 C960 360 960 465 988 465"/>
+    <path d="M830 380 V438"/>
+    <path d="M450 480 H518"/>
+    <path d="M690 480 H738"/>
+    <path d="M690 450 C720 450 960 440 988 300" stroke-dasharray="5 4"/>
   </g>
-  <text x="212" y="265" text-anchor="middle" font-size="12" fill="#5b5f66">HTTPS</text>
-  <text x="420" y="180" font-size="12" fill="#5b5f66">/* via OAC</text>
-  <text x="440" y="390" font-size="12" fill="#5b5f66">/api/*</text>
-  <text x="954" y="355" text-anchor="middle" font-size="12" fill="#5b5f66">GET</text>
+  <text x="219" y="242" text-anchor="middle" font-size="12" fill="#5b5f66">HTTPS</text>
+  <text x="430" y="160" font-size="12" fill="#5b5f66">/* via OAC</text>
+  <text x="458" y="322" font-size="12" fill="#5b5f66">/api/*</text>
+  <text x="822" y="414" text-anchor="end" font-size="12" fill="#5b5f66">Query</text>
+  <text x="696" y="474" font-size="12" fill="#5b5f66">Put</text>
+  <text x="458" y="474" font-size="12" fill="#5b5f66">invoke</text>
+  <text x="935" y="292" font-size="12" fill="#5b5f66">GET</text>
 
   <!-- shared engine note -->
-  <rect x="40" y="380" width="180" height="120" fill="#ece8fb" stroke="#5136c4" stroke-width="1.2"/>
-  <text x="130" y="408" text-anchor="middle" font-size="13" font-weight="700" fill="#16181b">Same rule engine</text>
-  <text x="130" y="428" text-anchor="middle" font-size="12" fill="#16181b">runs in the browser for</text>
-  <text x="130" y="446" text-anchor="middle" font-size="12" fill="#16181b">What If? and Storm Prep,</text>
-  <text x="130" y="464" text-anchor="middle" font-size="12" fill="#16181b">so results match Lambda</text>
-  <text x="130" y="482" text-anchor="middle" font-size="12" fill="#16181b">and respond instantly</text>
-  <path d="M115 322 V378" stroke="#5136c4" stroke-width="1.4" stroke-dasharray="4 4"/>
+  <rect x="40" y="350" width="170" height="130" fill="#ece8fb" stroke="#5136c4" stroke-width="1.2"/>
+  <text x="125" y="378" text-anchor="middle" font-size="13" font-weight="700" fill="#16181b">Same rule engine</text>
+  <text x="125" y="398" text-anchor="middle" font-size="12" fill="#16181b">runs in the browser for</text>
+  <text x="125" y="416" text-anchor="middle" font-size="12" fill="#16181b">What If?, Storm Prep and</text>
+  <text x="125" y="434" text-anchor="middle" font-size="12" fill="#16181b">forecast drift, so results</text>
+  <text x="125" y="452" text-anchor="middle" font-size="12" fill="#16181b">match Lambda and respond</text>
+  <text x="125" y="470" text-anchor="middle" font-size="12" fill="#16181b">instantly</text>
+  <path d="M120 302 V348" stroke="#5136c4" stroke-width="1.4" stroke-dasharray="4 4"/>
 </svg>

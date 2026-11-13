@@ -8,6 +8,7 @@ import {
   type Category,
 } from "../shared/preparationEngine";
 import { LevelMark, PausedDuringWarning } from "./components";
+import { download, LEAD_MINUTES, prepCalendar } from "./ics";
 
 interface Saved {
   categories: Category[];
@@ -90,6 +91,8 @@ export function StormPrep({
         : [...s.done, id],
     }));
   const before = plan?.before ?? [];
+  const calendarReady =
+    weather?.source === "live" && before.some((t) => t.due && t.due - LEAD_MINUTES * 60000 > Date.now());
   const doneCount = before.filter((t) => saved.done.includes(t.id)).length;
   const simulated = weather?.source === "simulated";
 
@@ -164,6 +167,35 @@ export function StormPrep({
           arrival times.
         </p>
       </section>
+
+      <div className="prep-actions">
+        <button
+          type="button"
+          onClick={() => {
+            const ics = prepCalendar(before, weather?.location.name ?? "your area");
+            if (ics) download("storm-signal-prep.ics", ics, "text/calendar");
+          }}
+          disabled={!calendarReady}
+        >
+          Add deadlines to my calendar
+        </button>
+        <button type="button" onClick={() => window.print()}>
+          Print this plan
+        </button>
+        <p className="fine">
+          {weather?.source === "simulated"
+            ? "Calendar export is turned off for simulated scenarios."
+            : calendarReady
+              ? `Creates reminders ${LEAD_MINUTES / 60} hours before each forecast deadline (a .ics file for any calendar app). Nothing is sent anywhere.`
+              : "No task has a forecast deadline yet, so there is nothing to add to a calendar."}{" "}
+          The plan also stays available offline on this device.
+        </p>
+      </div>
+      <p className="print-only print-meta">
+        Storm Signal prep plan · {weather?.location.name ?? ""} · printed {new Date().toLocaleString()}
+        {weather?.source === "simulated" ? " · SIMULATED SCENARIO, NOT A REAL FORECAST" : ""}. Follow NWS warnings and local
+        officials over this plan.
+      </p>
 
       <div className="phases">
         <section className="phase before" aria-labelledby="before-h">

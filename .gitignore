@@ -6,3 +6,4 @@ build/
 !.env.example
 playwright-report/
 test-results/
+.data/

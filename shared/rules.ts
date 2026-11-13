@@ -148,6 +148,13 @@ export function evaluateRules(
         rule.agg === "min" ? "≤" : "≥"
       }${fmt(threshold, rule.unit)}), ${rangeLabel(start, end, zone)}`,
       impact: rule.impact[level] || "",
+      measure: {
+        value,
+        threshold,
+        unit: rule.unit,
+        cmp: rule.agg === "min" ? "≤" : "≥",
+        lower: rule.thresholds[rule.thresholds.indexOf(match) + 1]?.[0] ?? null,
+      },
       start,
       end,
     });

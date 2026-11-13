@@ -25,11 +25,11 @@ A forecast of "40% thunderstorms, gusts to 45 mph" is accurate and still hard to
 
 ### What Storm Signal does
 
-Storm Signal turns live National Weather Service data into three connected answers:
+Storm Signal turns live National Weather Service data for **any U.S. place** (ZIP, city, street address or "use my location") into three connected answers:
 
-1. **Overview: what's coming and why it matters.** A Storm Signal level (Low → Critical) for the next 24 hours. Every level comes with its evidence: *"Elevated because of wind gusts: forecast peak 48 mph (Elevated at ≥46 mph), Fri 2 PM – 7 PM."* Official NWS alerts appear separately with NWS's own severity and full instruction text. They are never blended into a made-up score.
-2. **What If?: compare decisions.** Pick driving, an outdoor event, or home prep. Storm Signal compares *now*, *in 3 hours*, and *in 6 hours* using activity-specific thresholds, then explains in plain sentences what changes between options. It never calls a time "safe".
-3. **Storm Prep: act before it hits.** A checklist generated from the hazards actually in the forecast and the areas you care about (home, vehicle, household, electronics). Each task has a reason, a deadline from the forecast ("before about 5 PM, when gusts first reach 30 mph"), and an NWS or Ready.gov source. It's organized Before / During / After, and progress is saved in your browser.
+1. **Overview: what's coming and why it matters.** A Storm Signal level (Low → Critical) for the next 24 hours. Every level comes with its evidence: *"Elevated because of wind gusts: forecast peak 48 mph (Elevated at ≥46 mph), Fri 2 PM – 7 PM."* Official NWS alerts appear separately with NWS's own severity and full instruction text. They are never blended into a made-up score. Below the level, Storm Signal says **what would change it**: *"Would be Moderate if wind gusts stayed below 46 mph (forecast: 48 mph)."* And a **forecast-drift panel** shows how the NWS forecast for the same hours has changed over the last day ("Trending worse: peak gust 33 → 60 mph"). A forecast that keeps moving is less certain, and most apps never show that.
+2. **What If?: compare decisions.** Pick driving, an outdoor event, or home prep. Storm Signal compares *now*, *in 3 hours*, *in 6 hours* and **your own time** ("leave at 5:40 PM") using activity-specific thresholds, then explains in plain sentences what changes between options. It never calls a time "safe". **Share this view** sends the exact comparison to family as a link.
+3. **Storm Prep: act before it hits.** A checklist generated from the hazards actually in the forecast and the areas you care about (home, vehicle, household, electronics). Each task has a reason, a deadline from the forecast ("before about 5 PM, when gusts first reach 30 mph"), and an NWS or Ready.gov source. It's organized Before / During / After, and progress is saved in your browser. One click adds the deadlines to any calendar app as reminders (.ics, no account). The plan prints cleanly and **still opens offline**, because during an outage is exactly when you need it.
 
 **Built to be honest:**
 - Missing or failed data is **Unknown**, never Low. Each NWS source fails independently and is reported on screen.
@@ -40,6 +40,7 @@ Storm Signal turns live National Weather Service data into three connected answe
 ![Overview with live NWS data](screenshots/01-overview-live.png)
 ![What If? comparison (simulated storm, labelled)](screenshots/03-whatif-sim-thunderstorm-driving.png)
 ![Storm Prep checklist (simulated winter storm, labelled)](screenshots/04-prep-sim-winter.png)
+![Forecast drift (simulated history, labelled)](screenshots/08-drift-sim-thunderstorm.png)
 
 ### How it's built on AWS
 
@@ -48,11 +49,13 @@ Storm Signal turns live National Weather Service data into three connected answe
 - **Amazon CloudFront** serves the React/TypeScript app from a **private Amazon S3** bucket (Origin Access Control) and routes `/api/*` to the API, so there's one HTTPS origin, no CORS, and no credentials in the browser.
 - **Amazon API Gateway (HTTP API)** with route throttling invokes **AWS Lambda** (Node.js 22, arm64, reserved concurrency 3).
 - The Lambda calls five NWS endpoints in parallel (point metadata, hourly forecast, gridpoint data for gusts, thunder, snow and ice, the latest station observation, and active alerts). It allow-lists every upstream URL, enforces timeouts and size caps, converts units, and runs the deterministic risk engine. It caches in memory and coalesces duplicate requests to respect NWS.
+- **Amazon EventBridge Scheduler** invokes a second **Lambda** every 30 minutes. It saves each *new* NWS forecast issuance for the listed cities to **Amazon DynamoDB** (on-demand, 72-hour TTL). The weather Lambda queries that history so the browser can compare the same forecast hours across issuances. Each Lambda has its own least-privilege role (Put vs. Query).
+- **Any U.S. place** without a third-party service: ZIPs and city names resolve from public-domain U.S. Census Gazetteer data bundled in the Lambda, and only full street addresses go to the U.S. Census Geocoder. "Use my location" is rounded to about 1 km in the browser, and searches are never logged.
 - **Amazon CloudWatch** receives one structured JSON log line per request (latency, which sources succeeded, resulting level), plus an error alarm. An AWS Budget alert guards cost.
-- **Reliability:** 45 unit/integration tests on the rules and NWS client, plus 26 Playwright browser tests with automated accessibility checks (WCAG AA) on desktop and mobile.
+- **Reliability:** 61 unit/integration tests on the rules, NWS client, geocoding, history and calendar export, plus 38 Playwright browser tests on desktop and mobile. These include automated accessibility checks (WCAG AA) and an offline reload test against the production build.
 - **AWS SAM** defines everything. I deploy with one `sam deploy` and an `s3 sync`: no servers, no pipeline.
 
-The same TypeScript rule engine runs in Lambda for the overview and in the browser for the interactive What If?, so results are identical and comparisons respond instantly.
+The same TypeScript rule engine runs in Lambda for the overview and in the browser for the interactive What If?, so results are identical and comparisons respond instantly. Every threshold is published as JSON at `/api/rules`.
 
 ### Reuse the pattern
 
@@ -61,7 +64,9 @@ The pattern underneath Storm Signal fits any "public data → explained decision
 1. **CloudFront in front of both** a private S3 site and an HTTP API (`/api/*`). One origin, no CORS, no keys in the browser.
 2. **One Lambda as a careful upstream client:** allow-listed URLs, timeouts, payload caps, independent per-source failure, in-memory caching and request coalescing.
 3. **A deterministic rule engine shared by Lambda and the browser,** where every rule returns *evidence* (value, threshold, time window) instead of a bare score, and missing data yields "Unknown", never the safest answer.
-4. **One `template.yaml`, one `sam deploy`:** throttling, reserved concurrency, log retention, an alarm and a budget included.
+4. **A scheduled snapshot plus TTL table** turns any "latest only" public API into a history you can reason about ("is this forecast settling or still moving?"), for pennies.
+5. **Published rules** (`/api/rules`): others can audit the thresholds or reuse them in their own tools.
+6. **One `template.yaml`, one `sam deploy`:** throttling, reserved concurrency, log retention, an alarm and a budget included.
 
 Swap `nwsClient` and the rule tables, and the rest carries over. [Repo link with the template and engines, if published.]
 
@@ -69,10 +74,11 @@ Swap `nwsClient` and the rule tables, and the rest carries over. [Repo link with
 
 - Gridpoint data matters more than the hourly forecast for decisions: gusts, thunder probability and snow/ice amounts aren't in the hourly product.
 - "Slight chance snow showers" with a known 0 in of snow shouldn't raise a level. Numeric evidence now outranks vague wording, and that's covered by a regression test found during the live check.
-- Writing explanations was harder than writing thresholds. Every rule had to produce a sentence a person could check.
+- Writing explanations was harder than writing thresholds. Every rule had to produce a sentence a person could check, and the inverse ("what would change it") turned out to be the most useful sentence of all.
+- The NWS API only serves the latest forecast. Saving issuances on a schedule is what made "is this forecast trustworthy?" answerable.
 
 ### What's next
 
-Address and ZIP search (NWS points work anywhere in the U.S.); user-defined plans ("my 7:40 AM commute"); optional push reminders tied to prep deadlines; a screen-reader audit; Spanish-language guidance.
+Forecast history for any place someone saves; push reminders tied to prep deadlines; a manual screen-reader audit; Spanish-language guidance.
 
 *Storm Signal is a planning aid, not an emergency warning service. Always follow NWS warnings and local officials.*

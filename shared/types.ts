@@ -94,6 +94,8 @@ export interface Factor {
   evidence: string;
   /** What the evidence means in this context. */
   impact: string;
+  /** Numeric rules only: the value and threshold that produced this level. */
+  measure?: { value: number; threshold: number; unit: string; cmp: "≥" | "≤"; lower: Level | null };
   hazard: Hazard | null;
   start: number | null;
   end: number | null;

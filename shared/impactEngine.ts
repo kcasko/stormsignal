@@ -507,14 +507,28 @@ export function compareOptions(
   activity: Activity,
   hours: number,
   now: number,
+  /** Optional user-chosen start (ms), compared as option D. */
+  customStart?: number | null,
 ): OptionResult[] {
   const spec = ACTIVITIES[activity];
-  return OFFSETS.map((offset, i) => ({
+  const options = OFFSETS.map((offset, i) => ({
     key: "ABC"[i],
     label: offset === 0 ? `${spec.optionVerb} now` : `${spec.optionVerb} in ${offset} hours`,
     offsetHours: offset,
     ...evaluateOption(weather, activity, now + offset * HOUR, hours, now),
   }));
+  if (customStart && customStart >= now - 5 * 60000)
+    options.push({
+      key: "D",
+      label: `${spec.optionVerb} at ${new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        timeZone: weather.location.timeZone,
+      }).format(customStart)}`,
+      offsetHours: (customStart - now) / HOUR,
+      ...evaluateOption(weather, activity, customStart, hours, now),
+    });
+  return options;
 }
 
 const METRICS: { key: keyof Conditions; name: string; unit: string }[] = [

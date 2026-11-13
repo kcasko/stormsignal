@@ -24,6 +24,8 @@ export interface PrepTask {
   source: Source;
   /** Filled in by buildPlan from forecast timing. */
   timing?: string;
+  /** Forecast time this task should be done before (ms), or null if there is no forecast deadline. */
+  due?: number | null;
 }
 export interface Guidance {
   id: string;
@@ -140,6 +142,7 @@ export function buildPlan(
     const s = firstStart(t.hazards);
     return {
       ...t,
+      due: s !== null && s > assessment.windowStart ? s : null,
       timing:
         s === null
           ? "Anytime: good to have in place"

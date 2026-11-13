@@ -32,9 +32,10 @@ $bucket = & $get "SiteBucketName"
 $dist = & $get "DistributionId"
 
 # Hashed assets cache for a year; index.html is always revalidated.
-aws s3 sync dist "s3://$bucket" --delete --exclude index.html --cache-control "public,max-age=31536000,immutable"
+aws s3 sync dist "s3://$bucket" --delete --exclude index.html --exclude sw.js --cache-control "public,max-age=31536000,immutable"
 aws s3 cp dist/index.html "s3://$bucket/index.html" --cache-control "no-cache"
-aws cloudfront create-invalidation --distribution-id $dist --paths "/index.html" | Out-Null
+aws s3 cp dist/sw.js "s3://$bucket/sw.js" --cache-control "no-cache" --content-type "text/javascript"
+aws cloudfront create-invalidation --distribution-id $dist --paths "/index.html" "/sw.js" | Out-Null
 
 Write-Host "Site: $(& $get 'SiteUrl')"
 Write-Host "Verify: $(& $get 'SiteUrl')/api/health"

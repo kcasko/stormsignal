@@ -16,5 +16,9 @@ export default defineConfig({
   ],
   webServer: process.env.BASE_URL
     ? undefined
-    : { command: "npx vite --host 127.0.0.1", url: baseURL, reuseExistingServer: true, timeout: 60000 },
+    : [
+        { command: "npx vite --host 127.0.0.1", url: baseURL, reuseExistingServer: true, timeout: 60000 },
+        // Production build for the offline test (service workers only run in production builds).
+        { command: "npx vite build && npx vite preview", url: "http://127.0.0.1:4173", reuseExistingServer: true, timeout: 120000 },
+      ],
 });

@@ -1,5 +1,6 @@
 import { locations } from "../shared/locations";
 import { alertKind } from "../shared/rules";
+import { parsePointId } from "./geocode";
 import type { Weather, Period, Alert, Observation, Location } from "../shared/types";
 type Fetcher = typeof fetch;
 type Grid = Map<string, { start: number; end: number; value: number }[]>;
@@ -234,7 +235,19 @@ interface PointInfo {
   hourly: string;
   grid: string;
   stations: string;
+  timeZone: string | null;
+  place: string | null;
 }
+
+const validZone = (z: unknown) => {
+  if (typeof z !== "string" || !/^[A-Za-z_]+(\/[A-Za-z_+-]+){1,2}$/.test(z)) return null;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: z });
+    return z;
+  } catch {
+    return null;
+  }
+};
 
 async function point(location: Location, fetcher: Fetcher, now: number, useCache: boolean) {
   const hit = useCache ? points.get(location.id) : undefined;
@@ -243,10 +256,15 @@ async function point(location: Location, fetcher: Fetcher, now: number, useCache
     (await json(`https://api.weather.gov/points/${location.latitude},${location.longitude}`, fetcher))
       .properties,
   );
-  const value = {
+  const rel = record(record(p.relativeLocation).properties);
+  const city = text(rel.city, 80),
+    state = text(rel.state, 4);
+  const value: PointInfo = {
     hourly: forecastUrl(p.forecastHourly),
     grid: gridUrl(p.forecastGridData),
     stations: stationsUrl(p.observationStations),
+    timeZone: validZone(p.timeZone),
+    place: city && /^[A-Z]{2}$/.test(state) ? `${city}, ${state}` : null,
   };
   if (useCache) points.set(location.id, { value, until: now + POINT_TTL });
   return value;
@@ -257,8 +275,17 @@ export async function getWeather(
   fetcher: Fetcher = fetch,
   now = Date.now(),
 ): Promise<Weather> {
-  const location = locations.find((x) => x.id === id);
-  if (!location) throw Error("Unknown location");
+  const catalog = locations.find((x) => x.id === id);
+  const pt = catalog ? null : parsePointId(id);
+  if (!catalog && !pt) throw Error("Unknown location");
+  // Any U.S. point: name and time zone come from NWS point metadata once it loads.
+  const location: Location = catalog ?? {
+    id,
+    name: `${pt!.latitude.toFixed(3)}, ${pt!.longitude.toFixed(3)}`,
+    latitude: pt!.latitude,
+    longitude: pt!.longitude,
+    timeZone: "UTC",
+  };
   const useCache = fetcher === fetch;
   if (useCache) {
     const hit = cache.get(id);
@@ -294,8 +321,18 @@ export async function getWeather(
     try {
       info = await point(location, fetcher, now, useCache);
     } catch {
-      result.errors.push("NWS location lookup failed; forecast and observations unavailable.");
+      result.errors.push(
+        catalog
+          ? "NWS location lookup failed; forecast and observations unavailable."
+          : "NWS has no forecast for this point, or the lookup failed. Only U.S. locations are covered.",
+      );
     }
+    if (info && !catalog)
+      result.location = {
+        ...location,
+        name: info.place ? `Near ${info.place}` : location.name,
+        timeZone: info.timeZone ?? "UTC",
+      };
     if (info) {
       const i = info;
       const held: { grid: Grid | null } = { grid: null };

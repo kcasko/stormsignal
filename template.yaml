@@ -3,7 +3,8 @@ Transform: AWS::Serverless-2016-10-31
 Description: >-
   Storm Signal: serverless weather decision support. Private S3 + CloudFront for the
   static frontend, CloudFront /api/* -> API Gateway HTTP API -> Lambda (read-only NWS
-  retrieval and rule engine). No servers, no pipeline. Deployed manually with SAM.
+  retrieval and rule engine), EventBridge Scheduler -> snapshot Lambda -> DynamoDB
+  (forecast history, 72 h TTL). No servers, no pipeline. Deployed manually with SAM.
 
 Parameters:
   NwsUserAgent:
@@ -50,6 +51,9 @@ Resources:
               - Effect: Allow
                 Action: [logs:CreateLogStream, logs:PutLogEvents]
                 Resource: !Sub "${WeatherLog.Arn}:*"
+              - Effect: Allow
+                Action: dynamodb:Query
+                Resource: !GetAtt HistoryTable.Arn
   WeatherApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -73,6 +77,7 @@ Resources:
       Environment:
         Variables:
           NWS_USER_AGENT: !Ref NwsUserAgent
+          TABLE_NAME: !Ref HistoryTable
       Events:
         Weather:
           Type: HttpApi
@@ -83,6 +88,15 @@ Resources:
         Health:
           Type: HttpApi
           Properties: { ApiId: !Ref WeatherApi, Path: /api/health, Method: GET, PayloadFormatVersion: "2.0" }
+        Geocode:
+          Type: HttpApi
+          Properties: { ApiId: !Ref WeatherApi, Path: /api/geocode, Method: GET, PayloadFormatVersion: "2.0" }
+        History:
+          Type: HttpApi
+          Properties: { ApiId: !Ref WeatherApi, Path: /api/history, Method: GET, PayloadFormatVersion: "2.0" }
+        Rules:
+          Type: HttpApi
+          Properties: { ApiId: !Ref WeatherApi, Path: /api/rules, Method: GET, PayloadFormatVersion: "2.0" }
   WeatherErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -96,6 +110,67 @@ Resources:
       Threshold: 1
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
+
+  # ---------- Forecast history ----------
+  HistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: pk, AttributeType: S }
+        - { AttributeName: sk, AttributeType: S }
+      KeySchema:
+        - { AttributeName: pk, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+      TimeToLiveSpecification: { AttributeName: ttl, Enabled: true }
+      SSESpecification: { SSEEnabled: true }
+  SnapshotLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-snapshot"
+      RetentionInDays: 7
+  SnapshotRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: SnapshotWriteOnly
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents]
+                Resource: !Sub "${SnapshotLog.Arn}:*"
+              - Effect: Allow
+                Action: [dynamodb:PutItem, dynamodb:Query]
+                Resource: !GetAtt HistoryTable.Arn
+  SnapshotFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-snapshot"
+      CodeUri: build/
+      Handler: handler.snapshot
+      MemorySize: 256
+      Timeout: 120
+      ReservedConcurrentExecutions: 1
+      Role: !GetAtt SnapshotRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref SnapshotLog
+      Environment:
+        Variables:
+          NWS_USER_AGENT: !Ref NwsUserAgent
+          TABLE_NAME: !Ref HistoryTable
+      Events:
+        Every30Minutes:
+          Type: ScheduleV2
+          Properties:
+            ScheduleExpression: rate(30 minutes)
+            Description: Save Storm Signal forecast snapshots for catalog cities
 
   # ---------- Frontend ----------
   SiteBucket:

@@ -1,7 +1,9 @@
 import type { Assessment, Weather } from "../shared/types";
 import { HOUR } from "../shared/rules";
 import { OVERVIEW_RULES } from "../shared/riskEngine";
-import { AlertItem, FactorList, LevelMark, Limitations } from "./components";
+import { AlertItem, FactorList, LevelMark, Limitations, WhatWouldChange } from "./components";
+import { DriftPanel } from "./Drift";
+import type { HistoryState } from "./useHistory";
 import { day, hourOnly, stamp, unknown } from "./format";
 
 interface Props {
@@ -10,6 +12,8 @@ interface Props {
   loading: boolean;
   now: number;
   go: (page: string) => void;
+  history: HistoryState;
+  simulated: boolean;
 }
 
 const gustRule = OVERVIEW_RULES.find((r) => r.id === "gust")!;
@@ -23,9 +27,8 @@ function cellLevel(id: string, v: number | null) {
   return hit ? `lv-${hit[0]} hot` : "";
 }
 
-export function Overview({ weather, assessment, loading, now, go }: Props) {
+export function Overview({ weather, assessment, loading, now, go, history, simulated }: Props) {
   const zone = weather?.location.timeZone ?? "America/Detroit";
-  const simulated = weather?.source === "simulated";
   const next = weather
     ? weather.periods.filter(
         (p) => Date.parse(p.end) > now && Date.parse(p.start) < now + 24 * HOUR,
@@ -50,6 +53,7 @@ export function Overview({ weather, assessment, loading, now, go }: Props) {
           <>
             <LevelMark level={assessment.level} size="lg" />
             <p className="verdict-summary">{assessment.summary}</p>
+            <WhatWouldChange level={assessment.level} factors={assessment.factors} />
             <p className="fine">
               {stamp(assessment.windowStart, zone)} →{" "}
               {stamp(assessment.windowEnd, zone)}. A Storm Signal level comes
@@ -133,6 +137,8 @@ export function Overview({ weather, assessment, loading, now, go }: Props) {
           </p>
         )}
       </section>
+
+      <DriftPanel weather={weather} level={assessment?.level ?? null} history={history} now={now} simulated={simulated} />
 
       <section className="why" aria-labelledby="why-h">
         <h2 id="why-h" className="section-h">
@@ -289,8 +295,8 @@ export function Overview({ weather, assessment, loading, now, go }: Props) {
           </li>
         </ol>
         <p className="fine">
-          Thresholds and their sources are listed in the project’s architecture
-          notes. Storm Signal does not predict damage or the chance of an
+          Every threshold is published as JSON at <a href="/api/rules">/api/rules</a> so anyone can check or reuse
+          them. Storm Signal does not predict damage or the chance of an
           accident.
         </p>
       </section>

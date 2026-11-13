@@ -197,7 +197,7 @@ main { padding: 28px var(--gutter) 8px; }
 .overview {
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
-  grid-template-areas: "verdict official" "why official" "hourly hourly" "method method";
+  grid-template-areas: "verdict official" "drift official" "why official" "hourly hourly" "method method";
   gap: 36px 56px;
 }
 .verdict { grid-area: verdict; display: grid; gap: 14px; align-content: start; }
@@ -308,7 +308,7 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 .paused > summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--muted); }
 .paused[open] > summary { margin-bottom: 12px; }
 
-.options { list-style: none; padding: 0; margin: 0 0 32px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--rule-strong); }
+.options { list-style: none; padding: 0; margin: 0 0 32px; display: grid; border-top: 1px solid var(--rule-strong); }
 .option { --c: var(--lv-unknown); padding: 18px 20px 20px; border-right: 1px solid var(--rule); display: grid; gap: 12px; align-content: start; border-top: 4px solid var(--c); margin-top: -1px; }
 .option:last-child { border-right: 0; }
 .option-head { display: flex; gap: 12px; align-items: baseline; }
@@ -373,7 +373,7 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
   .where label { flex: 1 1 160px; }
   .where select, .src select { width: 100%; max-width: none; }
   .hide-sm { display: none; }
-  .overview { grid-template-columns: minmax(0, 1fr); grid-template-areas: "verdict" "official" "why" "hourly" "method"; gap: 32px; }
+  .overview { grid-template-columns: minmax(0, 1fr); grid-template-areas: "verdict" "official" "drift" "why" "hourly" "method"; gap: 32px; }
   .options { grid-template-columns: minmax(0, 1fr); }
   .option { border-right: 0; border-bottom: 1px solid var(--rule); }
   .phases { grid-template-columns: minmax(0, 1fr); }
@@ -403,3 +403,82 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 
 /* Programmatic focus targets (page headings, skip-link target) need no ring. */
 [tabindex="-1"]:focus { outline: none; }
+
+/* ---------- Place picker ---------- */
+.where { position: relative; }
+.picker { display: flex; gap: 8px; align-items: stretch; }
+.find-btn { font-size: 13.5px; padding: 6px 10px; }
+.finder {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(560px, calc(100vw - 32px));
+  background: var(--sheet);
+  border: 1px solid var(--rule-strong);
+  padding: 14px;
+  z-index: 30;
+  display: grid;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.finder-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.finder input {
+  flex: 1 1 220px;
+  min-width: 0;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  padding: 8px 10px;
+  background: var(--paper);
+}
+.matches { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.matches button { width: 100%; text-align: left; display: flex; justify-content: space-between; gap: 12px; font-weight: 500; }
+.matches small { color: var(--muted); font-weight: 400; }
+.matches button:hover small { color: inherit; }
+.status-actions { margin-left: auto; display: inline-flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+.statusbar .status-actions .text-btn { margin-left: 0; }
+.share-msg { font-size: 12.5px; color: var(--ink); max-width: 60ch; overflow-wrap: anywhere; }
+
+/* ---------- What would change ---------- */
+.cf { border-left: 3px solid var(--rule-strong); padding: 4px 0 4px 12px; font-size: 14px; }
+.cf-head { font-weight: 600; }
+.cf ul { margin: 4px 0 0; padding-left: 18px; color: var(--muted); }
+.option .cf { font-size: 13px; }
+
+/* ---------- Drift ---------- */
+.drift { grid-area: drift; }
+.trend { font: 600 22px/1.2 var(--serif); margin-bottom: 6px; }
+.trend-worse { color: var(--lv-high); }
+.trend-better { color: var(--lv-low); }
+.trend-shifting { color: var(--lv-elevated); }
+.trend-stable, .trend-unknown { color: var(--ink); }
+.drift-summary { max-width: 70ch; margin-bottom: 10px; }
+.drift-changes { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 4px; max-width: 520px; }
+.drift-changes li { display: flex; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--rule); padding: 4px 0; font-size: 14px; }
+.level-strip { margin: 0 0 10px; }
+.strip { display: flex; align-items: flex-end; gap: 3px; height: 34px; border-bottom: 1px solid var(--rule-strong); }
+.strip i { width: 10px; background: var(--c, var(--lv-unknown)); display: block; }
+
+/* ---------- What If: own time + four options ---------- */
+.yourtime { display: grid; gap: 8px; }
+.yourtime > span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.yourtime > div { display: flex; gap: 6px; align-items: center; }
+.options { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+
+/* ---------- Prep actions & print ---------- */
+.prep-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 24px; }
+.prep-actions .fine { flex-basis: 100%; }
+.print-only { display: none; }
+@media print {
+  :root { color-scheme: light; --paper: #fff; --sheet: #fff; --ink: #000; --muted: #333; --rule: #bbb; --rule-strong: #000; }
+  body { font-size: 11pt; }
+  .masthead, .statusbar, .bottomnav, .foot, .skip, .prep-actions, .cats, .progress-line button, .banner-sim { display: none !important; }
+  .print-only { display: block; margin-bottom: 12px; }
+  .app { max-width: none; padding: 0; }
+  main { padding: 0; }
+  .phases { grid-template-columns: 1fr; gap: 16px; }
+  .paused { border: 0; padding: 0; }
+  .paused > summary { display: none; }
+  .tasks li, .guidance li { break-inside: avoid; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #333; }
+  .banner-urgent { background: #fff; color: #000; border: 3px solid #000; }
+}
