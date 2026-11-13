@@ -5,7 +5,9 @@ param(
   [string]$Stack = "storm-signal",
   [string]$Region = "us-east-1",
   [Parameter(Mandatory = $true)][string]$UserAgent,
-  [string]$BudgetEmail = ""
+  [string]$BudgetEmail = "",
+  [string]$WatchEmail = "",
+  [string]$WatchLocation = "kalamazoo"
 )
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
@@ -20,6 +22,8 @@ if ($LASTEXITCODE) { throw "build failed" }
 
 $overrides = @("NwsUserAgent=""$UserAgent""")
 if ($BudgetEmail) { $overrides += "BudgetEmail=$BudgetEmail" }
+if ($WatchEmail) { $overrides += "WatchEmail=$WatchEmail" }
+$overrides += "WatchLocation=$WatchLocation"
 sam deploy --template-file template.yaml --stack-name $Stack --region $Region `
   --capabilities CAPABILITY_IAM --resolve-s3 --no-fail-on-empty-changeset `
   --parameter-overrides $overrides

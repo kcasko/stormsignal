@@ -6,6 +6,7 @@ import { locations } from "../shared/locations";
 import { assess } from "../shared/riskEngine";
 import { alertSignature, toSnapshot, toSnapshotAlerts, type Snapshot } from "../shared/drift";
 import { getWeather } from "./weather";
+import { watchChange, type WatchPublisher } from "./watch";
 
 export interface HistoryStore {
   put(location: string, snap: Snapshot): Promise<void>;
@@ -103,7 +104,7 @@ export function historyStore(): HistoryStore {
  * or at least every 3 hours.
  * Failures for one city never stop the others.
  */
-export async function takeSnapshots(s: HistoryStore = historyStore(), fetcher: typeof fetch = fetch, now = Date.now()) {
+export async function takeSnapshots(s: HistoryStore = historyStore(), fetcher: typeof fetch = fetch, now = Date.now(), watch?: { location: string; publish: WatchPublisher }) {
   const results: Record<string, string> = {};
   for (const l of locations) {
     try {
@@ -119,8 +120,20 @@ export async function takeSnapshots(s: HistoryStore = historyStore(), fetcher: t
         results[l.id] = "skipped: no new NWS issuance";
         continue;
       }
-      await s.put(l.id, toSnapshot(weather, assess(weather, now).level, now));
+      const next = toSnapshot(weather, assess(weather, now).level, now);
+      await s.put(l.id, next);
       results[l.id] = "saved";
+      const event = watch && watchChange(l.id, prior, next, watch.location);
+      if (event) {
+        try {
+          await watch!.publish(event);
+          results[l.id] = "saved; watch sent";
+        } catch (error) {
+          // A notification failure must never prevent forecast history for other cities.
+          console.error(JSON.stringify({ msg: "watch_error", location: l.id, error: String(error) }));
+          results[l.id] = "saved; watch failed";
+        }
+      }
     } catch {
       results[l.id] = "error";
     }

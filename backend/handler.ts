@@ -6,6 +6,7 @@ import { bbox } from "../shared/geo";
 import { historyStore, takeSnapshots, RETENTION_HOURS } from "./history";
 import { locations } from "../shared/locations";
 import { assess } from "../shared/riskEngine";
+import { snsPublisher } from "./watch";
 import { rulesCatalog } from "../shared/rulesCatalog";
 
 const VERSION = "0.5.0";
@@ -133,7 +134,9 @@ export async function handler(event: Event) {
 
 /** EventBridge Scheduler target: saves forecast snapshots for the catalog cities. */
 export async function snapshot() {
-  const results = await takeSnapshots();
+  const topic = process.env.WATCH_TOPIC_ARN;
+  const city = process.env.WATCH_LOCATION;
+  const results = await takeSnapshots(undefined, undefined, undefined, topic && city ? { location: city, publish: snsPublisher(topic) } : undefined);
   console.log(JSON.stringify({ msg: "snapshot", results }));
   return results;
 }
