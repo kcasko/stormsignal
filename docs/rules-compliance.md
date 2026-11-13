@@ -7,7 +7,7 @@ Legend: ✅ met · ⏳ not yet (planned) · ⚠️ needs Keith's decision · �
 
 | # | Requirement | Status | Evidence / next step |
 | --- | --- | --- | --- |
-| Q1 | Working project using at least one serverless AWS service | ⏳ | Uses Lambda (×2), API Gateway HTTP API, DynamoDB, EventBridge Scheduler, S3, CloudFront and CloudWatch (`template.yaml`, validated with `sam validate --lint`). It must be **deployed and publicly reachable** to count as "built and shipped". Waiting on Keith's deploy approval. |
+| Q1 | Working project using at least one serverless AWS service | ✅ | Uses Lambda (×2), API Gateway HTTP API, DynamoDB, EventBridge Scheduler, S3, CloudFront and CloudWatch (`template.yaml`, validated with `sam validate --lint`). Deployed Nov 13 to us-east-1 and publicly reachable at https://d3p9tcn7282g7r.cloudfront.net. Live smoke tests pass. |
 | Q2 | No servers or deployment pipelines to manage | ✅ | No EC2, containers or CI/CD. Deployment is one manual `scripts/deploy.ps1` run (`sam deploy` + `aws s3 sync`). |
 | Q3 | Written project **published on AWS Builder Center**: the problem, what the build does, and the serverless services used and how they connect | ⏳ 👤 | Draft in `docs/submission.md` covers all four, in labelled sections. Keith publishes from his Builder Center profile after deployment. |
 | Q4 | Link to a public video showing the build running end to end, in the submission's **demo** field | ⏳ 👤 | Script in `docs/demo-script.md` (2:45). It must show the **deployed** app with live data. Upload as public to YouTube, Vimeo, Facebook Video or Youku. |
@@ -39,6 +39,6 @@ Legend: ✅ met · ⏳ not yet (planned) · ⚠️ needs Keith's decision · �
 | Criterion | How the entry addresses it |
 | --- | --- |
 | Technical innovation and originality | Evidence-returning deterministic rule engine shared by Lambda and the browser; "what would change the level" counterfactuals; forecast-drift tracking (EventBridge Scheduler → Lambda → DynamoDB TTL) on an API that only serves the latest forecast; activity-specific What If? with your own time; Unknown-not-Low handling. |
-| Craft and execution (fit of services, **reliability**) | CloudFront fronting both S3 and the API (one origin); throttling and reserved concurrency; independent failure handling per NWS source; 45 unit/integration tests plus browser smoke tests. ⏳ Run a post-deploy smoke test against the public URL. |
+| Craft and execution (fit of services, **reliability**) | CloudFront fronting both S3 and the API (one origin); API throttling; independent failure handling per NWS source; 61 unit/integration tests and 38 browser tests, plus `e2e/live.spec.ts` against the public URL. |
 | Usefulness and impact (**reuse of the pattern**) | Works for any U.S. place; share links; calendar reminders; offline plan. "Reuse the pattern" section in the article; rules published at `/api/rules`. ⚠️ A public repo with a license and `template.yaml` makes reuse concrete. |
 | Creativity and storytelling | Problem → Overview → What If? → Storm Prep → architecture, in both article and video; the "one storm, different decisions" theme. |

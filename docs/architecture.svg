@@ -40,7 +40,7 @@
   <!-- Weather Lambda -->
   <rect x="740" y="240" width="180" height="140" fill="#fbfaf6" stroke="#9a4607" stroke-width="2.5"/>
   <text x="830" y="268" text-anchor="middle" font-size="17" font-weight="700" fill="#16181b">Lambda: weather</text>
-  <text x="830" y="288" text-anchor="middle" font-size="12" fill="#5b5f66">Node 22 · arm64 · ≤3 concurrent</text>
+  <text x="830" y="288" text-anchor="middle" font-size="12" fill="#5b5f66">Node 22 · arm64</text>
   <text x="830" y="310" text-anchor="middle" font-size="13" fill="#16181b">nwsClient · riskEngine</text>
   <text x="830" y="329" text-anchor="middle" font-size="13" fill="#16181b">geocode · rules · history</text>
   <text x="830" y="348" text-anchor="middle" font-size="12" fill="#5b5f66">bundled Census ZIP/place data</text>
@@ -56,7 +56,7 @@
   <text x="605" y="462" text-anchor="middle" font-size="16" font-weight="700" fill="#16181b">Lambda: snapshot</text>
   <text x="605" y="484" text-anchor="middle" font-size="12" fill="#5b5f66">saves each new NWS</text>
   <text x="605" y="501" text-anchor="middle" font-size="12" fill="#5b5f66">forecast per city</text>
-  <text x="605" y="518" text-anchor="middle" font-size="12" fill="#5b5f66">≤1 concurrent</text>
+  <text x="605" y="518" text-anchor="middle" font-size="12" fill="#5b5f66">every 30 min</text>
 
   <!-- DynamoDB -->
   <rect x="740" y="440" width="180" height="80" fill="#fbfaf6" stroke="#16181b" stroke-width="1.5"/>

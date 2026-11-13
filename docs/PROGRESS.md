@@ -71,3 +71,13 @@ Built all seven additions Keith approved:
 7. **`/api/rules`** JSON catalog.
 
 Verified: 61 unit tests, 38 Playwright tests (incl. offline reload and print), `sam validate --lint` (us-east-1), live routes against NWS and Census (ZIP 49007, "Boulder, CO", 1600 Pennsylvania Ave; a London point rejected), and the local snapshot job writing history for all nine cities. Still **not deployed**.
+
+## Published and deployed — November 13
+
+- Public repo: https://github.com/kcasko/stormsignal (MIT, default branch `main`). The history was scanned for secrets and personal data before the push.
+- Deployed `storm-signal` to us-east-1, account verified with STS. **Live: https://d3p9tcn7282g7r.cloudfront.net**
+- First attempt failed because the account's Lambda concurrency limit is 10 (no reserved concurrency allowed). It rolled back cleanly; reserved concurrency is now an optional parameter (off), and the redeploy succeeded.
+- Verified: site, security headers, HTTP→HTTPS, private S3 (403), all API routes, schedule enabled and saving snapshots, DynamoDB TTL, `e2e/live.spec.ts` 4/4.
+- Not set: the optional budget alert (needs an email; pass `-BudgetEmail` to `deploy.ps1`).
+
+Remaining (Keith): record and upload the video, publish the Builder Center article, submit before Nov 16, 1:00 PM PT.

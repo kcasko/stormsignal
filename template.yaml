@@ -18,9 +18,16 @@ Parameters:
   MonthlyBudgetUsd:
     Type: Number
     Default: 5
+  WeatherReservedConcurrency:
+    Type: Number
+    Default: 0
+    Description: >-
+      Optional hard cap on parallel weather Lambdas. 0 = none. New accounts (concurrency limit 10)
+      can't reserve any; API Gateway throttling and the account limit still bound load.
 
 Conditions:
   HasBudget: !Not [!Equals [!Ref BudgetEmail, ""]]
+  HasReservedConcurrency: !Not [!Equals [!Ref WeatherReservedConcurrency, 0]]
 
 Globals:
   Function:
@@ -69,8 +76,8 @@ Resources:
       Handler: handler.handler
       MemorySize: 256
       Timeout: 20
-      # Hard ceiling on parallel executions: bounds both cost and load on NWS.
-      ReservedConcurrentExecutions: 3
+      # Optional hard ceiling on parallel executions (see parameter).
+      ReservedConcurrentExecutions: !If [HasReservedConcurrency, !Ref WeatherReservedConcurrency, !Ref AWS::NoValue]
       Role: !GetAtt WeatherRole.Arn
       LoggingConfig:
         LogGroup: !Ref WeatherLog
@@ -157,7 +164,6 @@ Resources:
       Handler: handler.snapshot
       MemorySize: 256
       Timeout: 120
-      ReservedConcurrentExecutions: 1
       Role: !GetAtt SnapshotRole.Arn
       LoggingConfig:
         LogGroup: !Ref SnapshotLog

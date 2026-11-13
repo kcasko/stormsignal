@@ -67,8 +67,15 @@ The bundled Lambda (`build/handler.mjs`) was invoked directly. It returned 200 w
 - Source links: every weather.gov and ready.gov link returned HTTP 200. The FHWA link was updated to its canonical `highways.dot.gov/traffic-info`.
 - Fixed during browser testing: a one-render flash of previous live data under the "Simulated" banner when switching sources (the data hook now keys data to location + source).
 
+## Deployed verification (Nov 13, us-east-1)
+
+- `https://d3p9tcn7282g7r.cloudfront.net`: the page returns 200 over HTTPS, HTTP redirects with 301, and HSTS, nosniff, X-Frame-Options and Referrer-Policy headers are present. Direct S3 object access returns 403 (private bucket, OAC only).
+- `/api/health` returns 200. `/api/weather?location=kalamazoo` returns live NWS data with all four sources available. `/api/geocode?q=49007` and `/api/rules` return 200. A London point returns 400.
+- The EventBridge schedule is ENABLED. Its first run saved snapshots for all 9 cities, and a manual run saved only a city with a new NWS issuance (the rest were skipped). DynamoDB TTL is ENABLED, and `/api/history` returns `tracked: true`.
+- `e2e/live.spec.ts` against the public URL: 4/4 passed. Screenshots in `docs/screenshots/` were regenerated from the deployed site.
+- First deploy attempt failed: the account's Lambda concurrency limit is 10, so reserved concurrency was rejected. It rolled back cleanly, reserved concurrency became an optional parameter, and the redeploy succeeded.
+
 ## Not yet verified
 
-- Deployed AWS stack and public CloudFront URL (not deployed).
 - Manual screen-reader pass (NVDA/VoiceOver). Automated axe checks pass, but that isn't a full audit.
 - A real active severe-weather alert (none was active during testing; simulated scenarios cover this path).

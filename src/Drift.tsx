@@ -11,7 +11,7 @@ const TREND: Record<string, { word: string; glyph: string }> = {
   better: { word: "Trending better", glyph: "↘" },
   stable: { word: "Steady", glyph: "→" },
   shifting: { word: "Shifting", glyph: "↕" },
-  unknown: { word: "Not enough history", glyph: "·" },
+  unknown: { word: "Collecting history", glyph: "·" },
 };
 
 export function DriftPanel({

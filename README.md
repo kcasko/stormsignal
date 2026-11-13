@@ -4,6 +4,8 @@
 
 **Know the threat. Understand the impact. Prepare before it hits.**
 
+**Live:** https://d3p9tcn7282g7r.cloudfront.net
+
 A serverless weather decision-support app. It turns live National Weather Service forecasts and alerts into an explained risk level, a What If? comparison of plans, and a hazard-specific preparation checklist. Built for the AWS Builder Center Weekend Challenge "No Pipeline, No Problem" (Nov 13–16, 2026).
 
 - **Overview:** Storm Signal level (Low → Critical, or Unknown) for the next 24 h, with the evidence behind it and **what would change it**; official NWS alerts shown separately; current observation; hourly table.

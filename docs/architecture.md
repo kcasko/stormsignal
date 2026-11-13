@@ -8,7 +8,7 @@ Browser ──HTTPS──▶ Amazon CloudFront ──(OAC, SigV4)──▶ Amazo
                         └── /api/* ──HTTPS──▶ API Gateway HTTP API (throttled 5 rps / burst 10)
                                                    │
                                                    ▼
-                                         AWS Lambda (Node 22, arm64, ≤3 concurrent)
+                                         AWS Lambda (Node 22, arm64)            
                                            nwsClient ─▶ api.weather.gov
                                            riskEngine ─▶ assessment
                                                    │
@@ -102,9 +102,9 @@ Forecast wording (e.g. "Thunderstorms", "Freezing Rain", "Blizzard") is only use
 - Each Lambda has its own role. Weather: write its own logs, `dynamodb:Query` on the history table. Snapshot: write its own logs, `PutItem`/`Query` on the history table. Nothing else.
 - Lambdas only call fixed `api.weather.gov` URL shapes and the fixed Census Geocoder endpoint (no user-supplied URLs). Locations are an allow-listed id or a validated U.S. `pt:lat,lon` with at most 3 decimals. GET only.
 - CloudFront Managed-SecurityHeadersPolicy (HSTS, nosniff, frame-options, referrer-policy).
-- Throttling (HTTP API 5 rps / burst 10) plus reserved concurrency of 3 bound cost and NWS load. These limit spend but are **not** a hard billing cap. Use the optional budget alert.
+- HTTP API throttling (5 rps / burst 10) bounds cost and NWS load, and the account's own Lambda concurrency limit is a hard ceiling. These limit spend but are **not** a hard billing cap. Use the optional budget alert.
 - Checklist state stays in the browser (`localStorage`). There are no accounts and no server-side user data. "Use my location" is opt-in and rounded to about 1 km in the browser. Search text is never logged or stored, and custom points are logged only as `point`. Forecast history holds NWS data for the listed cities only.
-- Reserved concurrency: weather 3, snapshot 1. The snapshot runs 48 times a day for 9 cities and skips cities whose NWS forecast hasn't been reissued.
+- Reserved concurrency is an optional parameter (`WeatherReservedConcurrency`, default off). New AWS accounts have a concurrency limit of 10, and AWS keeps all 10 unreserved, so the first deploy failed when it tried to reserve 3 and 1 (Nov 13). The snapshot runs once every 30 minutes with a 2-minute timeout, so runs can't overlap. It visits 9 cities and skips any whose NWS forecast hasn't been reissued.
 
 ## Teardown
 

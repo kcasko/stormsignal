@@ -15,7 +15,7 @@
 
 ## Storm Signal: one storm, different decisions
 
-**Live app:** [CloudFront URL] · **Demo (2:45):** [YouTube/Vimeo URL] · **Code:** https://github.com/kcasko/stormsignal (MIT)
+**Live app:** https://d3p9tcn7282g7r.cloudfront.net · **Demo (2:45):** [YouTube/Vimeo URL] · **Code:** https://github.com/kcasko/stormsignal (MIT)
 
 ### The problem
 
@@ -47,7 +47,7 @@ Storm Signal turns live National Weather Service data for **any U.S. place** (ZI
 ![Storm Signal architecture](screenshots/00-architecture.png)
 
 - **Amazon CloudFront** serves the React/TypeScript app from a **private Amazon S3** bucket (Origin Access Control) and routes `/api/*` to the API, so there's one HTTPS origin, no CORS, and no credentials in the browser.
-- **Amazon API Gateway (HTTP API)** with route throttling invokes **AWS Lambda** (Node.js 22, arm64, reserved concurrency 3).
+- **Amazon API Gateway (HTTP API)** with route throttling invokes **AWS Lambda** (Node.js 22, arm64).
 - The Lambda calls five NWS endpoints in parallel (point metadata, hourly forecast, gridpoint data for gusts, thunder, snow and ice, the latest station observation, and active alerts). It allow-lists every upstream URL, enforces timeouts and size caps, converts units, and runs the deterministic risk engine. It caches in memory and coalesces duplicate requests to respect NWS.
 - **Amazon EventBridge Scheduler** invokes a second **Lambda** every 30 minutes. It saves each *new* NWS forecast issuance for the listed cities to **Amazon DynamoDB** (on-demand, 72-hour TTL). The weather Lambda queries that history so the browser can compare the same forecast hours across issuances. Each Lambda has its own least-privilege role (Put vs. Query).
 - **Any U.S. place** without a third-party service: ZIPs and city names resolve from public-domain U.S. Census Gazetteer data bundled in the Lambda, and only full street addresses go to the U.S. Census Geocoder. "Use my location" is rounded to about 1 km in the browser, and searches are never logged.
@@ -66,7 +66,7 @@ The pattern underneath Storm Signal fits any "public data → explained decision
 3. **A deterministic rule engine shared by Lambda and the browser,** where every rule returns *evidence* (value, threshold, time window) instead of a bare score, and missing data yields "Unknown", never the safest answer.
 4. **A scheduled snapshot plus TTL table** turns any "latest only" public API into a history you can reason about ("is this forecast settling or still moving?"), for pennies.
 5. **Published rules** (`/api/rules`): others can audit the thresholds or reuse them in their own tools.
-6. **One `template.yaml`, one `sam deploy`:** throttling, reserved concurrency, log retention, an alarm and a budget included.
+6. **One `template.yaml`, one `sam deploy`:** throttling, log retention, an alarm and a budget included.
 
 Swap `nwsClient` and the rule tables, and the rest carries over. Code, template and rules: https://github.com/kcasko/stormsignal (MIT).
 
