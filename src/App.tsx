@@ -285,16 +285,12 @@ export function App() {
 
       <footer className="foot">
         <p>
-          Storm Signal is a planning aid, not an emergency warning service. Keep official alerts enabled on your phone and
-          follow NWS warnings and local officials over anything shown here.
+          A planning aid, not a warning service. Follow NWS warnings and local officials first.
         </p>
         <p className="fine">
-          Data: <a href="https://www.weather.gov/documentation/services-web-api">National Weather Service API</a> (forecast,
-          gridpoint, alerts, observations) for any U.S. point. Place search uses U.S. Census Bureau data. Levels are Storm Signal’s own
-          rule-based classification (<a href="/api/rules">rules as JSON</a>). Forecast history is saved for{" "}
-          {locations.length} listed cities. Not affiliated with or endorsed by the National Weather Service,
-          NOAA or FEMA. Fonts: Source Serif 4, Public Sans, IBM Plex Mono (
-          <a href="licenses/SourceSerif4-OFL.txt">SIL OFL 1.1</a>).
+          Data from the <a href="https://www.weather.gov/documentation/services-web-api">National Weather Service</a> and
+          U.S. Census Bureau. Not affiliated with NWS, NOAA or FEMA. <a href="/api/rules">Rules</a> ·{" "}
+          <a href="licenses/SourceSerif4-OFL.txt">Licenses</a>
         </p>
       </footer>
 
