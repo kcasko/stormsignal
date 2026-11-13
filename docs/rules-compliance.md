@@ -12,7 +12,7 @@ Legend: ✅ met · ⏳ not yet (planned) · ⚠️ needs Keith's decision · �
 | Q3 | Written project **published on AWS Builder Center**: the problem, what the build does, and the serverless services used and how they connect | ⏳ 👤 | Draft in `docs/submission.md` covers all four, in labelled sections. Keith publishes from his Builder Center profile after deployment. |
 | Q4 | Link to a public video showing the build running end to end, in the submission's **demo** field | ⏳ 👤 | Script in `docs/demo-script.md` (2:45). It must show the **deployed** app with live data. Upload as public to YouTube, Vimeo, Facebook Video or Youku. |
 | Q5 | Video under 3 minutes | ⏳ | Scripted for 2:45. Check the final file length before upload. |
-| Q6 | Original project, not previously published | ✅ | Original code; no git remote; never deployed or published. Keep the repo private until submission, or publish it only during the window. |
+| Q6 | Original project, not previously published | ✅ | Original code. Published for the first time during the submission window (public repo and AWS deployment on Nov 13). |
 | Q7 | Video contains no third-party trademarks, copyrighted music or other material without permission | ✅ planned | The script avoids other weather apps and brands. Use voice only, or self-made or licensed music. Record in a clean browser profile (no bookmarks bar, extensions or other tabs). AWS console footage is the sponsor's own service. |
 | Q8 | Submitted before **Mon Nov 16, 1:00 PM PT (4:00 PM ET)** | ⏳ 👤 | Internal target: noon ET Nov 16. |
 
@@ -32,7 +32,7 @@ Legend: ✅ met · ⏳ not yet (planned) · ⚠️ needs Keith's decision · �
 | No implied endorsement or use of agency logos | ✅ | Footer: "Not affiliated with or endorsed by the National Weather Service, NOAA or FEMA." No logos are used. |
 | Doesn't cause harm or promote harmful activity | ✅ | Safety-first behaviour: official warnings override everything; missing data shows as Unknown, never Low; never says "safe"; disclaimers on every page. |
 | User privacy | ✅ | No accounts, no tracking. "Use my location" is opt-in and rounded to about 1 km in the browser. Search text is never logged or stored; custom points are logged only as `point`. Only street addresses go to the U.S. Census Geocoder. Checklist state stays in `localStorage`. Forecast history stores NWS data for listed cities only. |
-| Repo license | ⚠️ | No `LICENSE` file yet. If the repo goes public, Keith picks one (`docs/PLAN.md` suggested MIT). This helps "how easily others could reuse the pattern". |
+| Repo license | ✅ | MIT (`LICENSE`), public repo at https://github.com/kcasko/stormsignal (Keith's choice, Nov 13). |
 
 ## Judging alignment (each 25%; Gate 1 is AI + human, Gate 2 is human)
 

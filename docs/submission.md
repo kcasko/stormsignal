@@ -15,7 +15,7 @@
 
 ## Storm Signal: one storm, different decisions
 
-**Live app:** [CloudFront URL] · **Demo (2:45):** [YouTube/Vimeo URL] · **Code:** [repo URL, if made public]
+**Live app:** [CloudFront URL] · **Demo (2:45):** [YouTube/Vimeo URL] · **Code:** https://github.com/kcasko/stormsignal (MIT)
 
 ### The problem
 
@@ -68,7 +68,7 @@ The pattern underneath Storm Signal fits any "public data → explained decision
 5. **Published rules** (`/api/rules`): others can audit the thresholds or reuse them in their own tools.
 6. **One `template.yaml`, one `sam deploy`:** throttling, reserved concurrency, log retention, an alarm and a budget included.
 
-Swap `nwsClient` and the rule tables, and the rest carries over. [Repo link with the template and engines, if published.]
+Swap `nwsClient` and the rule tables, and the rest carries over. Code, template and rules: https://github.com/kcasko/stormsignal (MIT).
 
 ### What I learned
 

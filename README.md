@@ -58,3 +58,7 @@ Deploys `template.yaml` to `us-east-1` (the account default): private S3 + Cloud
 ## Limits
 
 Storm Signal is a planning aid, not an emergency warning service. It doesn't retrieve road conditions, predict damage, or say when something is safe. An empty NWS alert list is not an all-clear. Keep official alerts enabled on your phone.
+
+## License
+
+MIT. See `LICENSE`; third-party notices are in `NOTICE.md`.
