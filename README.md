@@ -66,8 +66,10 @@ Deploys `template.yaml` to `us-east-1` (the account default): private S3 + Cloud
 - `docs/cost-controls.md`: project-tagged AWS budget, account-wide guardrail, credit and tagging limitations
 - `docs/design.md`: wireframes, hierarchy, design tokens
 - `docs/testing.md`: what is tested and what was verified by hand
-- `docs/demo-script.md`: video under three minutes
-- `docs/submission.md`: Builder Center article draft (unpublished)
+- `docs/demo-submission.md`: final sub-three-minute demo shot list and recording checklist
+- `docs/demo-script.md`: earlier detailed video plan (archive)
+- `docs/submission-ready.md`: current Builder Center article draft (unpublished; public demo video required)
+- `docs/submission.md`: earlier detailed Builder Center article draft (archive)
 - `docs/rules-compliance.md`: every official rule mapped to status and evidence
 - `docs/PROGRESS.md`: status log
 - `NOTICE.md`: third-party licenses and attributions

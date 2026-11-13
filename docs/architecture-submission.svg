@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="780" viewBox="0 0 1280 780">
+<title>Storm Signal serverless AWS architecture</title>
+<defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8z" fill="#262830"/></marker></defs>
+<rect width="1280" height="780" fill="#f5f3ee"/>
+<g font-family="Arial, sans-serif" fill="#262830">
+<text x="46" y="55" font-size="32" font-weight="700">Storm Signal: how the serverless pieces connect</text>
+<text x="46" y="83" font-size="17" fill="#5b6268">Manual AWS SAM deployment. No managed servers or deployment pipeline.</text>
+<rect x="248" y="107" width="730" height="621" rx="10" fill="#e9eef1" stroke="#60717f" stroke-width="2" stroke-dasharray="7 6"/>
+<text x="265" y="139" font-size="16" font-weight="700">AWS / us-east-1</text>
+<g fill="#fffefa" stroke="#36434d" stroke-width="2">
+<rect x="36" y="199" width="167" height="110" rx="6"/>
+<rect x="274" y="199" width="179" height="110" rx="6"/>
+<rect x="512" y="153" width="182" height="77" rx="6"/>
+<rect x="512" y="286" width="182" height="83" rx="6"/>
+<rect x="758" y="272" width="194" height="124" rx="6"/>
+<rect x="758" y="426" width="194" height="70" rx="6"/>
+<rect x="274" y="526" width="179" height="77" rx="6"/>
+<rect x="512" y="526" width="182" height="77" rx="6"/>
+<rect x="758" y="526" width="194" height="77" rx="6"/>
+<rect x="512" y="646" width="182" height="60" rx="6"/>
+<rect x="758" y="646" width="194" height="60" rx="6"/>
+<rect x="1036" y="238" width="200" height="108" rx="6"/>
+<rect x="1036" y="426" width="200" height="70" rx="6"/>
+<rect x="1036" y="646" width="200" height="60" rx="6"/>
+</g>
+<g font-size="16" font-weight="700" text-anchor="middle">
+<text x="119" y="233">Visitor browser</text><text x="363" y="233">CloudFront</text>
+<text x="603" y="183">Private S3</text><text x="603" y="318">API Gateway</text>
+<text x="855" y="301">Weather Lambda</text><text x="855" y="456">Amazon Location</text>
+<text x="363" y="554">EventBridge</text><text x="603" y="554">Snapshot Lambda</text>
+<text x="855" y="554">DynamoDB</text><text x="603" y="676">CloudWatch</text>
+<text x="855" y="676">SNS email watch</text><text x="1136" y="265">NWS API</text>
+<text x="1136" y="456">OpenStreetMap</text><text x="1136" y="676">Subscriber email</text>
+</g>
+<g font-size="13" fill="#5b6268" text-anchor="middle">
+<text x="119" y="259">React app / Leaflet</text><text x="119" y="278">Offline prep checklist</text>
+<text x="363" y="260">HTTPS frontend + API</text><text x="363" y="280">Cache static assets</text>
+<text x="603" y="206">HTML, JS, CSS</text><text x="603" y="343">Throttled HTTP API</text>
+<text x="855" y="325">NWS data + rules</text><text x="855" y="343">Forecast at arrival</text><text x="855" y="361">Route / geocode</text>
+<text x="855" y="478">Driving route geometry</text>
+<text x="363" y="580">Every 30 minutes</text><text x="603" y="580">Save changed issues</text>
+<text x="855" y="578">Forecast history / TTL</text><text x="603" y="693">Logs + error alarms</text>
+<text x="855" y="693">Increased risk only</text><text x="1136" y="289">Forecasts + active alerts</text>
+<text x="1136" y="310">Official weather source</text><text x="1136" y="478">Public street-map tiles</text>
+<text x="1136" y="693">Opt-in confirmed</text>
+</g>
+<g stroke="#262830" fill="none" stroke-width="2.3" marker-end="url(#arr)">
+<path d="M203 254 H272"/>
+<path d="M453 226 L510 195"/>
+<path d="M453 272 L510 320"/>
+<path d="M694 329 H755"/>
+<path d="M952 313 H1034"/>
+<path d="M854 397 V424"/>
+<path d="M854 397 V524"/>
+<path d="M453 565 H510"/>
+<path d="M694 565 H755"/>
+<path d="M694 589 L771 644"/>
+<path d="M952 676 H1033"/>
+<path d="M603 604 V644"/>
+</g>
+<g font-size="12" fill="#53616a" text-anchor="middle">
+<text x="481" y="184">static</text><text x="482" y="303">/api/*</text>
+<text x="989" y="301">GET</text>
+</g>
+<path d="M203 299 C222 354 1140 373 1136 424" stroke="#262830" stroke-width="1.5" fill="none" stroke-dasharray="5 5" marker-end="url(#arr)"/>
+<text x="1094" y="390" font-size="12" fill="#53616a">map tiles</text>
+<text x="46" y="749" font-family="Arial, sans-serif" font-size="14" fill="#5b6268">Active NWS warnings stay separate from Storm Signal risk estimates. No route is declared safe.</text>
+</g>
+</svg>
