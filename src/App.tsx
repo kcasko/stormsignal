@@ -3,6 +3,7 @@ import { locations } from "../shared/locations";
 import type { Weather } from "../shared/types";
 import {
   comparePlan,
+  intervalEndLabel,
   dateLabel,
   forecastWindows,
   HOUR,
@@ -304,7 +305,7 @@ export function App() {
                   <div key={i} className="hazard">
                     <b>
                       {dateLabel(w.start, zone)} · {timeLabel(w.start, zone)}–
-                      {timeLabel(w.end, zone)}
+                      {intervalEndLabel(w.start, w.end, zone)}
                     </b>
                     {w.label}
                   </div>
@@ -423,7 +424,11 @@ export function App() {
                         {activity === "charge"
                           ? "Start charging"
                           : "Finishes " +
-                            timeLabel(start + minutes * 60000, zone)}
+                            intervalEndLabel(
+                              start,
+                              start + minutes * 60000,
+                              zone,
+                            )}
                       </div>
                       <p>{result.title}</p>
                       <p className="small">

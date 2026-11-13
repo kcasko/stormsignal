@@ -111,3 +111,11 @@ export function isStale(weather: Weather, now: number) {
     !Number.isFinite(Date.parse(weather.fetchedAt))
   );
 }
+
+export function intervalEndLabel(start: number, end: number, zone: string) {
+  return (
+    (dateLabel(start, zone) !== dateLabel(end, zone)
+      ? dateLabel(end, zone) + " "
+      : "") + timeLabel(end, zone)
+  );
+}

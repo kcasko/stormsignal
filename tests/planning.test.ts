@@ -3,6 +3,7 @@ import { demoWeather, demoAnchor } from "../src/demo";
 import { locations } from "../shared/locations";
 import {
   comparePlan,
+  intervalEndLabel,
   forecastWindows,
   HOUR,
   overlaps,
@@ -83,4 +84,14 @@ describe("time comparisons", () => {
   it("keeps simulated source explicit", () => {
     expect(data().source).toBe("simulated");
   });
+});
+
+it("includes the new calendar date when an activity crosses midnight", () => {
+  const start = Date.parse("2026-11-13T04:45:00Z");
+  expect(intervalEndLabel(start, start + 45 * 60000, "America/Detroit")).toBe(
+    "Nov 13 12:30 AM",
+  );
+  expect(intervalEndLabel(start, start + 10 * 60000, "America/Detroit")).toBe(
+    "11:55 PM",
+  );
 });
