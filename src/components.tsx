@@ -39,6 +39,37 @@ export function LevelMark({
   );
 }
 
+/** The headline level: the word, then all five steps labelled so the scale explains itself. */
+export function LevelScale({ level }: { level: Classification }) {
+  const at = level === "unknown" ? -1 : LEVELS.indexOf(level);
+  return (
+    <div
+      className={`scale level-${level}`}
+      role="img"
+      aria-label={
+        level === "unknown"
+          ? "Storm Signal level: Unknown (not enough data)"
+          : `Storm Signal level: ${levelName(level)}, step ${at + 1} of 5`
+      }
+    >
+      <span className="scale-word" aria-hidden="true">
+        {levelName(level)}
+      </span>
+      <ol className="scale-steps" aria-hidden="true">
+        {LEVELS.map((l, i) => (
+          <li
+            key={l}
+            className={`lv-${l}${level === "unknown" ? " hatch" : i <= at ? " on" : ""}${i === at ? " here" : ""}`}
+          >
+            <i />
+            <span>{levelName(l)}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 export function FactorList({ factors }: { factors: Factor[] }) {
   if (!factors.length) return null;
   return (

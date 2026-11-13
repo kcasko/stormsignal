@@ -309,7 +309,9 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
 .paused[open] > summary { margin-bottom: 12px; }
 
 .options { list-style: none; padding: 0; margin: 0 0 32px; display: grid; border-top: 1px solid var(--rule-strong); }
-.option { --c: var(--lv-unknown); padding: 18px 20px 20px; border-right: 1px solid var(--rule); display: grid; gap: 12px; align-content: start; border-top: 4px solid var(--c); margin-top: -1px; }
+.option { padding: 18px 20px 20px; border-right: 1px solid var(--rule); display: grid; gap: 12px; align-content: start; border-top: 6px solid var(--c); margin-top: -1px; background: linear-gradient(color-mix(in srgb, var(--c) 7%, var(--sheet)), var(--paper) 220px); }
+.option > .level .level-word { font-size: 18px; }
+.option > .level .level-glyph i { width: 11px; height: 15px; }
 .option:last-child { border-right: 0; }
 .option-head { display: flex; gap: 12px; align-items: baseline; }
 .option-head h2 { font: 600 22px/1.15 var(--serif); }
@@ -482,3 +484,56 @@ legend, .duration span { font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em;
   a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #333; }
   .banner-urgent { background: #fff; color: #000; border: 3px solid #000; }
 }
+
+/* ---------- Design pass: verdict panel, level scale, hour ribbon ---------- */
+.tone-low { --c: var(--lv-low); }
+.tone-moderate { --c: var(--lv-moderate); }
+.tone-elevated { --c: var(--lv-elevated); }
+.tone-high { --c: var(--lv-high); }
+.tone-critical { --c: var(--lv-critical); }
+.tone-unknown { --c: var(--lv-unknown); }
+.verdict {
+  border-top: 6px solid var(--c);
+  background: color-mix(in srgb, var(--c) 6%, var(--sheet));
+  padding: 20px clamp(16px, 2.4vw, 28px) 24px;
+}
+.verdict .verdict-actions { margin-top: 10px; }
+
+.scale { display: grid; gap: 14px; color: var(--c); }
+.scale-word { font: 600 clamp(56px, 9vw, 104px)/0.9 var(--serif); letter-spacing: -0.035em; }
+.scale-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; max-width: 520px; }
+.scale-steps li { display: grid; gap: 6px; color: var(--muted); font: 600 11px/1 var(--sans); letter-spacing: 0.06em; text-transform: uppercase; }
+.scale-steps i { display: block; height: 10px; border: 1.5px solid var(--c); background: transparent; }
+.scale-steps li.on i { background: var(--c); }
+.scale-steps li.hatch i { border-color: var(--lv-unknown); background: repeating-linear-gradient(-45deg, var(--lv-unknown) 0 1.5px, transparent 1.5px 5px); }
+.scale-steps li.here { color: var(--c); }
+.scale-steps li.here i { height: 16px; margin-top: -6px; }
+
+.ribbon { margin: 4px 0 0; display: grid; gap: 6px; max-width: 640px; }
+.ribbon-cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; font-size: 13.5px; }
+.lv-text { color: var(--c); }
+.ribbon-cells { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; height: 30px; }
+.ribbon-cells i { background: var(--c); display: block; }
+.ribbon-cells i.lv-low { background: color-mix(in srgb, var(--lv-low) 38%, var(--sheet)); }
+.ribbon-cells i.lv-unknown { background: repeating-linear-gradient(-45deg, var(--lv-unknown) 0 1.5px, transparent 1.5px 5px); }
+.ribbon-cells i.now { box-shadow: inset 3px 0 0 var(--ink); }
+.ribbon-ticks { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; font: 500 11px/1 var(--mono); color: var(--muted); }
+.ribbon-ticks span { white-space: nowrap; overflow: visible; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ribbon-cells i { animation: ribbon-in 420ms cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes ribbon-in { from { transform: scaleY(0.2); opacity: 0; } to { transform: none; opacity: 1; } }
+}
+@media (max-width: 520px) {
+  .scale-steps li span { font-size: 9.5px; letter-spacing: 0.02em; }
+  .ribbon-ticks { font-size: 10px; }
+}
+@media print {
+  .verdict { background: none; }
+}
+
+/* Storm Prep: hazards as ruled blocks, stronger phase rules */
+.phase-head { border-bottom-width: 2px; }
+.phase.first .phase-head { border-bottom-color: var(--lv-critical); }
+.hazard-list li { border-left: 3px solid var(--rule-strong); padding-left: 10px; }
+.progress i { background: var(--lv-low); transition: width 240ms ease; }

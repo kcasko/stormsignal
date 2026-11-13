@@ -5,7 +5,7 @@ Rebuilt November 12, 2026 to the three-experience structure (Overview / What If?
 ## Information hierarchy
 
 1. **Official protective action** (only when an urgent warning is active) — full-width banner above everything, NWS instruction text verbatim.
-2. **Storm Signal level** for the next 24 hours — one word (Low … Critical, or Unknown), a five-segment level glyph, and one sentence saying *why*.
+2. **Storm Signal level** for the next 24 hours — one word (Low … Critical, or Unknown) on a panel tinted with the level's colour, a labelled five-step scale (so the scale explains itself without a legend), one sentence saying *why*, and an **hour-by-hour ribbon**: 24 cells, each coloured by the highest factor that applies to that hour (`shared/ribbon.ts`), with the peak run named in words ("Highest: High, 5:00 PM – 7:00 PM"). Hours with missing NWS data are hatched as Unknown, never Low. Screen readers get the ribbon as runs ("High 5PM to 7PM; …").
 3. **Official NWS alerts** — kept visually separate from the Storm Signal level, labelled "Official", with NWS severity and full text.
 4. **Evidence** — the contributing factors, each with its threshold and time window, then the hourly timeline.
 5. **Provenance** — data source, retrieval time, forecast update time, stale/failed notices.

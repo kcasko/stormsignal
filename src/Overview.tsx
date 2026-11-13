@@ -1,10 +1,12 @@
 import type { Assessment, Weather } from "../shared/types";
 import { HOUR } from "../shared/rules";
 import { OVERVIEW_RULES } from "../shared/riskEngine";
-import { AlertItem, FactorList, LevelMark, Limitations, WhatWouldChange } from "./components";
+import { AlertItem, FactorList, LevelScale, Limitations, WhatWouldChange } from "./components";
+import { hourlySignal, peakRun } from "../shared/ribbon";
+import { levelName } from "../shared/rules";
 import { DriftPanel } from "./Drift";
 import type { HistoryState } from "./useHistory";
-import { day, hourOnly, stamp, unknown } from "./format";
+import { clock, day, hourOnly, stamp, unknown } from "./format";
 
 interface Props {
   weather: Weather | null;
@@ -45,14 +47,15 @@ export function Overview({ weather, assessment, loading, now, go, history, simul
       <h1 className="sr" tabIndex={-1}>
         Weather overview{weather ? " for " + weather.location.name : ""}
       </h1>
-      <section className="verdict" aria-labelledby="verdict-h">
+      <section className={`verdict tone-${assessment?.level ?? "unknown"}`} aria-labelledby="verdict-h">
         <p className="eyebrow" id="verdict-h">
           Storm Signal level · next 24 hours
         </p>
         {assessment ? (
           <>
-            <LevelMark level={assessment.level} size="lg" />
+            <LevelScale level={assessment.level} />
             <p className="verdict-summary">{assessment.summary}</p>
+            {weather && <SignalRibbon weather={weather} assessment={assessment} zone={zone} />}
             <WhatWouldChange level={assessment.level} factors={assessment.factors} />
             <p className="fine">
               {stamp(assessment.windowStart, zone)} →{" "}
@@ -301,5 +304,42 @@ export function Overview({ weather, assessment, loading, now, go, history, simul
         </p>
       </section>
     </div>
+  );
+}
+
+/** 24 hourly cells coloured by the highest factor that applies to each hour. */
+function SignalRibbon({ weather, assessment, zone }: { weather: Weather; assessment: Assessment; zone: string }) {
+  const hours = hourlySignal(weather, assessment);
+  const peak = peakRun(hours);
+  const runs: string[] = [];
+  for (let i = 0; i < hours.length; ) {
+    let j = i;
+    while (j + 1 < hours.length && hours[j + 1].level === hours[i].level) j++;
+    runs.push(`${levelName(hours[i].level)} ${hourOnly(hours[i].start, zone)} to ${hourOnly(hours[j].start + HOUR, zone)}`);
+    i = j + 1;
+  }
+  return (
+    <figure className="ribbon">
+      <figcaption className="ribbon-cap">
+        <span className="eyebrow">Hour by hour</span>
+        <span>
+          {peak
+            ? <>Highest: <b className={`lv-${peak.level} lv-text`}>{levelName(peak.level)}</b>, {clock(peak.start, zone)} – {clock(peak.end, zone)}</>
+            : hours.some((h) => h.level === "unknown")
+              ? "Some hours have no NWS data"
+              : "No hour meets a Storm Signal threshold"}
+        </span>
+      </figcaption>
+      <div className="ribbon-cells" role="img" aria-label={`Storm Signal level by hour: ${runs.join("; ")}.`}>
+        {hours.map((h, i) => (
+          <i key={h.start} className={`lv-${h.level}${i === 0 ? " now" : ""}`} title={`${hourOnly(h.start, zone)}: ${levelName(h.level)}`} />
+        ))}
+      </div>
+      <div className="ribbon-ticks" aria-hidden="true">
+        {hours.map((h, i) => (
+          <span key={h.start}>{i === 0 ? "Now" : i % 3 === 0 ? hourOnly(h.start, zone) : ""}</span>
+        ))}
+      </div>
+    </figure>
   );
 }
