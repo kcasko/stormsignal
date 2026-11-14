@@ -4,7 +4,7 @@
 
 **Live project:** https://d3p9tcn7282g7r.cloudfront.net/
 **Code and deployment guide:** https://github.com/kcasko/stormsignal
-**Demo (required):** [ADD PUBLIC VIDEO URL, UNDER 3 MINUTES]
+**Demo (public, 2:12):** https://youtu.be/tEDXWOmK88M
 
 ## The email that wasn't a storm warning
 
@@ -76,7 +76,7 @@ That pattern could work for air quality, transit disruptions or other public dat
 
 **Try the live app:** https://d3p9tcn7282g7r.cloudfront.net/
 **Explore the source:** https://github.com/kcasko/stormsignal
-**Watch the demo:** [REQUIRED PUBLIC VIDEO URL]
+**Watch the demo:** https://youtu.be/tEDXWOmK88M
 
 *Storm Signal supports planning. It is not an emergency-warning service. Follow official NWS alerts and local authorities.*
 
@@ -85,7 +85,7 @@ That pattern could work for air quality, transit disruptions or other public dat
 ## Editor's final checks (remove before publication)
 
 - [ ] Upload or host the screenshots in Builder Center: relative paths in Markdown will not work in the post editor.
-- [ ] Supply the public video link in the dedicated **Demo** field. The video must be **under three minutes** and show the deployed app end to end.
+- [x] Public video is available at https://youtu.be/tEDXWOmK88M (2:12). Add that URL to the dedicated **Demo** field when submitting the Builder Center project.
 - [ ] Review screenshots for correct labels, dates and no private information. The route screenshot is from live NWS, not simulated.
 - [ ] Verify no open draft placeholders remain in the published article.
 - [ ] Confirm Builder Center registration, profile eligibility and unpublished-project requirement.

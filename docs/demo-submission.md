@@ -35,4 +35,4 @@
 - `docs/screenshots/11-route-live-mobile.png`: live mobile route rendering
 - `docs/screenshots/12-architecture-submission.png`: up-to-date serverless architecture
 
-**Not yet done:** final narrated/public video, hosted article screenshots, Builder Center publication and submission. None should be claimed complete until independently verified.
+**Completed November 14, 2026:** Amazon Polly-narrated, captioned 2:12 video was publicly published and independently verified in a signed-out YouTube browser session: https://youtu.be/tEDXWOmK88M. **Still pending:** hosted article screenshots, Builder Center publication and challenge submission.
